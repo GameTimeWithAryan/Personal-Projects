@@ -39,7 +39,7 @@ class Button:
 
 
 def get_mark_color():
-    return "#FF615F" if game_board.get_player() == "X" else "#3EC5F3"
+    return "#FF615F" if game_board.get_player() == game_board.players[0] else "#3EC5F3"
 
 
 def mouse_on_board(mouse_position):
@@ -128,8 +128,7 @@ pygame.display.set_caption('Tic Tac Toe')
 clock = pygame.time.Clock()
 text_font = pygame.font.Font(None, 50)
 
-# Game variable
-
+# Game variables
 # AI
 GAME_MODE = 1  # 0 for Single Player, 1 for AI
 AI_PLAYER = 1  # player index, [0, 1]
@@ -160,11 +159,12 @@ title_bg_rect.center = (WIDTH / 2, (HEIGHT - board_size) / 4)
 
 # Reset button
 restart_button = Button("Reset", (200, 55), (WIDTH / 2, (HEIGHT - (HEIGHT - board_size) / 4)))
-pygame.time.set_timer(pygame.USEREVENT + 1, 100)
+ai_trigger_event = pygame.USEREVENT + 1
+if GAME_MODE == 1:
+    pygame.time.set_timer(ai_trigger_event, 100)
 
 while True:
     if not game_over:
-
         if game_board.check_win():
             title = f"Winner: {game_board.winner}"
             game_over = True
@@ -184,8 +184,8 @@ while True:
             row, column = get_row_column_from_mouse(mouse_pos)
             game_board.play_move(row, column)
 
-        if event.type == pygame.USEREVENT + 1:
-            if GAME_MODE == 1 and game_board.player_index == AI_PLAYER and not game_over:
+        if event.type == ai_trigger_event:
+            if game_board.player_index == AI_PLAYER and not game_over:
                 game_board.ai_play()
 
     # Drawing everything
