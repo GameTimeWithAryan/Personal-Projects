@@ -12,8 +12,8 @@ DELAY_BETWEEN_UPDATE = 30
 def switch_play_button():
     global play_index
     play_index = int(not bool(play_index))
-    play_button['text'] = play_buttons[play_index][0]
-    play_button['command'] = play_buttons[play_index][1]
+    play_button.config(text=play_buttons[play_index][0])
+    play_button.config(command=play_buttons[play_index][1])
 
 
 def update_stopwatch(start_time, time_to_count):
@@ -36,7 +36,7 @@ def update_stopwatch(start_time, time_to_count):
 
 
 def update_stopwatch_label(stopwatch_time):
-    stopwatch_label['text'] = TIME_FORMAT.format(stopwatch_time)
+    stopwatch_label.config(text=TIME_FORMAT.format(stopwatch_time))
 
 
 def get_timer_input():
