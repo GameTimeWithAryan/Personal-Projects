@@ -7,7 +7,7 @@ from colorama import Fore
 # game_board.board = [[EMPTY_CELL, EMPTY_CELL, EMPTY_CELL],
 #                     [EMPTY_CELL, EMPTY_CELL, EMPTY_CELL],
 #                     [EMPTY_CELL, EMPTY_CELL, EMPTY_CELL]]
-# game_board.player_index = 0  # set player index to whose turn it is, 0 means first player, 1 means second player
+# select_player_index(game_board)
 
 EMPTY_CELL = "_"
 
@@ -171,10 +171,13 @@ def evaluate(board, move, maximizing):
 
 def evaluate_position(board: Board):
     evaluations = []
+    legal_moves = board.get_legal_moves()
+    select_player_index(board)
+
     eval_color_coding = {"0": Fore.BLUE, "1": Fore.GREEN, "-1": Fore.RED} if board.player_index == 0 \
         else {"0": Fore.BLUE, "1": Fore.RED, "-1": Fore.GREEN}
 
-    for move in board.get_legal_moves():
+    for move in legal_moves:
         evaluation = str(evaluate(board, move, bool(board.player_index)))
         evaluation = eval_color_coding[evaluation] + evaluation + "\033[0m"
         evaluations.append(evaluation)
@@ -187,12 +190,18 @@ def evaluate_position(board: Board):
     print(f"Player Turn: {board.get_player()}")
 
 
+def select_player_index(b: Board):
+    if len(b.get_legal_moves()) % 2 == 1:
+        b.player_index = 0
+    else:
+        b.player_index = 1
+
+
 def main():
     b = Board()
     b.board = [[EMPTY_CELL, "X", EMPTY_CELL],
                [EMPTY_CELL, EMPTY_CELL, EMPTY_CELL],
                [EMPTY_CELL, EMPTY_CELL, EMPTY_CELL]]
-    b.player_index = 1
     evaluate_position(b)
 
 
