@@ -7,7 +7,7 @@ def console_game():
 
     game_board = Board()
     game_board.print_board()
-    ai_mode = 1
+    ai_mode = 0
 
     while True:
         if game_board.check_win():
@@ -17,13 +17,13 @@ def console_game():
             print("DRAW")
             break
 
-        move = input("Enter move - ").strip()
-        if "ai" in move:
+        move = input("Enter move - ")
+        if move == "ai":
             game_board.ai_play()
             game_board.print_board()
         else:
-            column, row = map(int, move.split(" "))
-            is_move_played = game_board.play_move(row, column)
+            row, column = map(int, move.split(" "))
+            is_move_played = game_board.play_move(row - 1, column - 1)
             if is_move_played:
                 game_board.print_board()
                 if ai_mode:
