@@ -50,8 +50,8 @@ def mouse_on_board(mouse_position):
 def get_row_column_from_mouse(mouse_position):
     # Run only if `mouse_on_board(mouse_position)` is True
     mouse_x, mouse_y = mouse_position
-    row_num = (mouse_x - board_x_pos) // 130 + 1
-    column_num = (mouse_y - board_y_pos) // 130 + 1
+    row_num = (mouse_y - board_y_pos) // 130
+    column_num = (mouse_x - board_x_pos) // 130
     return row_num, column_num
 
 
@@ -69,11 +69,11 @@ def draw_grid():
 
 def draw_marks():
     # Draw marked marks on board
-    for col in range(1, 4):
-        for ro in range(1, 4):
-            cell = game_board.get_cell(ro, col)
-            mark_pos_x = board_x_pos + board_size * ro / 3 - board_size / 6
-            mark_pos_y = board_y_pos + board_size * col / 3 - board_size / 6
+    for row_num in range(1, 4):
+        for column_num in range(1, 4):
+            cell = game_board.get_cell(row_num - 1, column_num - 1)
+            mark_pos_x = board_x_pos + board_size * column_num / 3 - board_size / 6
+            mark_pos_y = board_y_pos + board_size * row_num / 3 - board_size / 6
             if cell == "X":
                 mark_surf = pygame.image.load('marks/cross.png').convert_alpha()
                 mark_rect = mark_surf.get_rect(center=(mark_pos_x, mark_pos_y))
@@ -93,13 +93,14 @@ def draw_win_line():
     adjustment = 45
     x_adjustment = 0
     y_adjustment = 0
-    win_start_row, win_start_col = game_board.win_line[0]
-    win_end_row, win_end_col = game_board.win_line[2]
+    increment_1 = lambda x: (x[0] + 1, x[1] + 1)
+    win_start_row, win_start_column = increment_1(game_board.win_line[0])
+    win_end_row, win_end_column = increment_1(game_board.win_line[2])
 
-    line_start_x = board_x_pos + win_start_row * board_size / 3 - board_size / 6  # Lift all four values more
-    line_start_y = board_y_pos + win_start_col * board_size / 3 - board_size / 6
-    line_end_x = board_x_pos + win_end_row * board_size / 3 - board_size / 6
-    line_end_y = board_y_pos + win_end_col * board_size / 3 - board_size / 6
+    line_start_x = board_x_pos + win_start_column * board_size / 3 - board_size / 6  # Lift all four values more
+    line_start_y = board_y_pos + win_start_row * board_size / 3 - board_size / 6
+    line_end_x = board_x_pos + win_end_column * board_size / 3 - board_size / 6
+    line_end_y = board_y_pos + win_end_row * board_size / 3 - board_size / 6
 
     line_color = get_mark_color()
 
