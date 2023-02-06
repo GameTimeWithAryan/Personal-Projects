@@ -126,7 +126,7 @@ class Board:
 ##################### AI ###########################
 
 def unplay_move(board: Board, row: int, column: int):
-    board.board[column - 1][row - 1] = EMPTY_CELL
+    board.board[row][column] = EMPTY_CELL
     board.switch_player()
 
 

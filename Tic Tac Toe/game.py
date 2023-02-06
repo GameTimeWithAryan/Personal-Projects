@@ -2,7 +2,7 @@ import pygame
 from board import Board
 
 
-class Button:
+class ResetButton:
     def __init__(self, text: str, size, position):
         self.pressed = False
 
@@ -159,7 +159,7 @@ title_bg_rect = pygame.Rect(0, 0, 200, 75)
 title_bg_rect.center = (WIDTH / 2, (HEIGHT - board_size) / 4)
 
 # Reset button
-restart_button = Button("Reset", (200, 55), (WIDTH / 2, (HEIGHT - (HEIGHT - board_size) / 4)))
+reset_button = ResetButton("Reset", (200, 55), (WIDTH / 2, (HEIGHT - (HEIGHT - board_size) / 4)))
 ai_trigger_event = pygame.USEREVENT + 1
 if GAME_MODE == 1:
     pygame.time.set_timer(ai_trigger_event, 100)
@@ -198,7 +198,7 @@ while True:
 
     # Reset Button
     if game_board.has_moved:
-        restart_button.update()
+        reset_button.update()
 
     # Title
     pygame.draw.rect(screen, secondary_color, title_bg_rect)
