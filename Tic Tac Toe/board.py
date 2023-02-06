@@ -30,7 +30,6 @@ class Board:
         if board is None:
             board = self.board
         print()
-        print("<-ROW->")
         print("  1 2 3")
         for row in range(3):
             print(f'{row + 1} {" ".join(board[row])}')
@@ -39,7 +38,7 @@ class Board:
     def play_move(self, row: int, column: int):
         if self.is_empty(row, column):
             self.has_moved = True
-            self.board[column - 1][row - 1] = self.get_player()
+            self.board[row][column] = self.get_player()
             self.switch_player()
             return True
         else:
@@ -59,10 +58,10 @@ class Board:
         return True
 
     def is_empty(self, row: int, column: int):
-        return self.board[column - 1][row - 1] == EMPTY_CELL
+        return self.board[row][column] == EMPTY_CELL
 
     def get_cell(self, row: int, column: int):
-        return self.board[column - 1][row - 1]
+        return self.board[row][column]
 
     def get_player(self):
         return self.players[self.player_index]
@@ -72,25 +71,25 @@ class Board:
 
     def get_legal_moves(self):
         legal_moves = []
-        for col_num, col in enumerate(self.board):
-            for row_num, cell in enumerate(col):
+        for row_num, row in enumerate(self.board):
+            for column_num, cell in enumerate(row):
                 if cell == EMPTY_CELL:
-                    legal_moves.append((row_num + 1, col_num + 1))
+                    legal_moves.append((row_num, column_num))
         return legal_moves
 
-    def check_horizontal(self, board):
-        for col_num, column in enumerate(board):
-            if is_line_equal(column):
-                self.win_line = [(row_num + 1, col_num + 1) for row_num in range(3)]
+    def check_horizontal(self, board: list):
+        for row_num, row in enumerate(board):
+            if Board.is_line_equal(row):
+                self.win_line = [(row_num, column_num) for column_num in range(3)]
                 self.win_type = "horizontal"
                 return True
         return False
 
-    def check_vertical(self, board):
-        for row_num in range(3):
-            column = [board[column_num][row_num] for column_num in range(3)]
-            if is_line_equal(column):
-                self.win_line = [(row_num + 1, column_num + 1) for column_num in range(3)]
+    def check_vertical(self, board: list):
+        for column_num in range(3):
+            column = [board[row_num][column_num] for row_num in range(3)]
+            if Board.is_line_equal(column):
+                self.win_line = [(row_num, column_num) for row_num in range(3)]
                 self.win_type = "vertical"
                 return True
         return False
@@ -99,14 +98,24 @@ class Board:
         diagonal_1 = [board[i][i] for i in range(3)]
         diagonal_2 = [board[i][2 - i] for i in range(3)]
 
-        if is_line_equal(diagonal_1):
-            self.win_line = [(i + 1, i + 1) for i in range(3)]
+        if Board.is_line_equal(diagonal_1):
+            self.win_line = [(i, i) for i in range(3)]
             self.win_type = "diagonal"
             return True
-        elif is_line_equal(diagonal_2):
-            self.win_line = [(i + 1, 2 - i + 1) for i in range(3)]
+        elif Board.is_line_equal(diagonal_2):
+            self.win_line = [(i, 2 - i) for i in range(3)]
             return True
         return False
+
+    @staticmethod
+    def is_line_equal(line: list):
+        check_item = line[0]
+        if check_item == EMPTY_CELL:
+            return False
+        for item in line[1:]:
+            if item != check_item:
+                return False
+        return True
 
     def ai_play(self):
         move = minmax(self, True, False)
@@ -114,20 +123,10 @@ class Board:
             self.play_move(move[0], move[1])
 
 
-def is_line_equal(line: list):
-    check_item = line[0]
-    if check_item == EMPTY_CELL:
-        return False
-    for item in line[1:]:
-        if item != check_item:
-            return False
-    return True
-
-
 ##################### AI ###########################
 
 def unplay_move(board: Board, row: int, column: int):
-    board.board[column - 1][row - 1] = EMPTY_CELL
+    board.board[row][column] = EMPTY_CELL
     board.switch_player()
 
 
@@ -190,11 +189,11 @@ def evaluate_position(board: Board):
     print(f"Player Turn: {board.get_player()}")
 
 
-def select_player_index(b: Board):
-    if len(b.get_legal_moves()) % 2 == 1:
-        b.player_index = 0
+def select_player_index(board: Board):
+    if len(board.get_legal_moves()) % 2 == 1:
+        board.player_index = 0
     else:
-        b.player_index = 1
+        board.player_index = 1
 
 
 def main():
@@ -202,6 +201,7 @@ def main():
     b.board = [[EMPTY_CELL, "X", EMPTY_CELL],
                [EMPTY_CELL, EMPTY_CELL, EMPTY_CELL],
                [EMPTY_CELL, EMPTY_CELL, EMPTY_CELL]]
+    b.print_board()
     evaluate_position(b)
 
 
