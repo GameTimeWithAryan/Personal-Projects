@@ -39,7 +39,7 @@ class ResetButton:
 
 
 def get_mark_color():
-    return "#FF615F" if game_board.get_player() == game_board.players[0] else "#3EC5F3"
+    return "#FF615F" if game_board.get_player() == game_board.players[1] else "#3EC5F3"
 
 
 def mouse_on_board(mouse_position):
@@ -136,12 +136,6 @@ AI_PLAYER = 1  # player index, [0, 1]
 
 game_board = Board()
 
-# Setup to play from a custom position, check board.py for info
-# game_board.board = [[EMPTY_CELL, EMPTY_CELL, EMPTY_CELL],
-#                     [EMPTY_CELL, EMPTY_CELL, EMPTY_CELL],
-#                     [EMPTY_CELL, EMPTY_CELL, EMPTY_CELL]]
-# game_board.player_index = 0
-
 game_over = False
 primary_color = "#14bdac"
 accent_color = "white"
@@ -197,7 +191,7 @@ while True:
     draw_win_line()
 
     # Reset Button
-    if game_board.has_moved:
+    if game_board.moves_played:
         reset_button.update()
 
     # Title
