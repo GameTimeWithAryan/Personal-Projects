@@ -1,5 +1,5 @@
 import pygame
-from board import Board
+from board import Board, WinType
 
 
 class ResetButton:
@@ -104,13 +104,13 @@ def draw_win_line():
 
     line_color = get_mark_color()
 
-    if game_board.win_type == "horizontal":
+    if game_board.win_type == WinType.HORIZONTAL:
         x_adjustment = adjustment
 
-    if game_board.win_type == "vertical":
+    if game_board.win_type == WinType.VERTICAL:
         y_adjustment = adjustment
 
-    if game_board.win_type == "diagonal":
+    if game_board.win_type == WinType.DIAGONAL:
         x_adjustment = y_adjustment = adjustment
 
     line_start_x -= x_adjustment

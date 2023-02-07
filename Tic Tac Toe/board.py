@@ -1,6 +1,7 @@
 import copy
 from math import inf
 from colorama import Fore
+from enum import Enum, auto
 
 # Board setup for custom use
 # custom_board = Board()
@@ -9,6 +10,12 @@ from colorama import Fore
 #                     [EMPTY_CELL, EMPTY_CELL, EMPTY_CELL]]
 
 EMPTY_CELL = "_"
+
+
+class WinType(Enum):
+    HORIZONTAL = auto()
+    VERTICAL = auto()
+    DIAGONAL = auto()
 
 
 class Board:
@@ -51,8 +58,8 @@ class Board:
         return False
 
     def check_draw(self):
-        for col in self.board:
-            if EMPTY_CELL in col:
+        for row in self.board:
+            if EMPTY_CELL in row:
                 return False
         return True
 
@@ -80,7 +87,7 @@ class Board:
         for row_num, row in enumerate(board):
             if Board.is_line_equal(row):
                 self.win_line = [(row_num, column_num) for column_num in range(3)]
-                self.win_type = "horizontal"
+                self.win_type = WinType.HORIZONTAL
                 return True
         return False
 
@@ -89,7 +96,7 @@ class Board:
             column = [board[row_num][column_num] for row_num in range(3)]
             if Board.is_line_equal(column):
                 self.win_line = [(row_num, column_num) for row_num in range(3)]
-                self.win_type = "vertical"
+                self.win_type = WinType.VERTICAL
                 return True
         return False
 
@@ -99,7 +106,7 @@ class Board:
 
         if Board.is_line_equal(diagonal_1):
             self.win_line = [(i, i) for i in range(3)]
-            self.win_type = "diagonal"
+            self.win_type = WinType.DIAGONAL
             return True
         elif Board.is_line_equal(diagonal_2):
             self.win_line = [(i, 2 - i) for i in range(3)]
@@ -138,7 +145,7 @@ def unplay_move(board: Board, row: int, column: int):
     board.switch_player()
 
 
-def minmax(minmax_board: Board, maximizing: bool, evaluating=True):
+def minmax(minmax_board: Board, maximizing: bool, evaluating: bool = True):
     min_eval = inf
     max_eval = -inf
     best_move = None
@@ -169,7 +176,7 @@ def minmax(minmax_board: Board, maximizing: bool, evaluating=True):
     return best_move
 
 
-def evaluate(board, move, maximizing):
+def evaluate(board: Board, move: tuple, maximizing: bool):
     board.play_move(move[0], move[1])
     evaluation = minmax(board, maximizing)
     unplay_move(board, move[0], move[1])
