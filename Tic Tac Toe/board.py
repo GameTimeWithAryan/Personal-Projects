@@ -3,11 +3,10 @@ from math import inf
 from colorama import Fore
 
 # Board setup for custom use
-# game_board = Board()
-# game_board.board = [[EMPTY_CELL, EMPTY_CELL, EMPTY_CELL],
+# custom_board = Board()
+# custom_board.board = [[EMPTY_CELL, EMPTY_CELL, EMPTY_CELL],
 #                     [EMPTY_CELL, EMPTY_CELL, EMPTY_CELL],
 #                     [EMPTY_CELL, EMPTY_CELL, EMPTY_CELL]]
-# select_player_index(game_board)
 
 EMPTY_CELL = "_"
 
@@ -117,6 +116,15 @@ class Board:
                 return False
         return True
 
+    def fix_player_index(self):
+        """ Automatically fix/select player_index by checking the board state
+            Useful when trying with custom setup """
+
+        if len(self.get_legal_moves()) % 2 == 1:
+            self.player_index = 0
+        else:
+            self.player_index = 1
+
     def ai_play(self):
         move = minmax(self, True, False)
         if move:
@@ -168,10 +176,11 @@ def evaluate(board, move, maximizing):
     return evaluation
 
 
+################## CUSTOM SETUP #########################
 def evaluate_position(board: Board):
     evaluations = []
     legal_moves = board.get_legal_moves()
-    select_player_index(board)
+    board.fix_player_index()
 
     eval_color_coding = {"0": Fore.BLUE, "1": Fore.GREEN, "-1": Fore.RED} if board.player_index == 0 \
         else {"0": Fore.BLUE, "1": Fore.RED, "-1": Fore.GREEN}
@@ -182,27 +191,20 @@ def evaluate_position(board: Board):
         evaluations.append(evaluation)
 
     board_board = board.board
-    for idx, place in enumerate(board.get_legal_moves()):
-        board_board[place[1] - 1][place[0] - 1] = evaluations[idx]
+    for index, (row, column) in enumerate(board.get_legal_moves()):
+        board_board[row][column] = evaluations[index]
 
     board.print_board(board_board)
     print(f"Player Turn: {board.get_player()}")
 
 
-def select_player_index(board: Board):
-    if len(board.get_legal_moves()) % 2 == 1:
-        board.player_index = 0
-    else:
-        board.player_index = 1
-
-
+############# MAIN #############
 def main():
-    b = Board()
-    b.board = [[EMPTY_CELL, "X", EMPTY_CELL],
-               [EMPTY_CELL, EMPTY_CELL, EMPTY_CELL],
-               [EMPTY_CELL, EMPTY_CELL, EMPTY_CELL]]
-    b.print_board()
-    evaluate_position(b)
+    eval_board = Board()
+    eval_board.board = [["X", EMPTY_CELL, EMPTY_CELL],
+                        [EMPTY_CELL, EMPTY_CELL, EMPTY_CELL],
+                        [EMPTY_CELL, EMPTY_CELL, EMPTY_CELL]]
+    evaluate_position(eval_board)
 
 
 if __name__ == '__main__':
