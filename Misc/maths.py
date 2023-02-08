@@ -2,16 +2,15 @@ def get_name(name: str):
     return int("".join([str(ord(char) - 96) for char in name.lower()]))
 
 
-def factorize(number: int, num_list: list):
-    # [7] -> 1030210302 * 7 + 0
-    # [7, 14] -> (73586450 * 14 + 2) * 7 + 0
+def factorize(number: int, divisor_list: list):
+    # 7211472114 [7] -> 1030210302 * 7 + 0
+    # 7211472114 [7, 14] -> (73586450 * 14 + 2) * 7 + 0
     template = "{q} * {n} + {r}"
     dividend = number
     output_list = []
-    num_list.reverse()
+    divisor_list.reverse()
 
-    for num in num_list:
-        divisor = num
+    for divisor in divisor_list:
         quotient = dividend // divisor
         remainder = dividend % divisor
         output = template.format(q=quotient, n=divisor, r=remainder)

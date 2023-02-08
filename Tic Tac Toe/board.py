@@ -60,7 +60,7 @@ class Board:
 
     def check_win(self):
         if self.check_horizontal(self.board) or self.check_vertical(self.board) or self.check_diagonal(self.board):
-            self.winner = self.players[self.get_other_player()]
+            self.winner = self.players[self.get_other_player_index()]
             return True
         return False
 
@@ -117,11 +117,11 @@ class Board:
     def get_player(self):
         return self.players[self.player_index]
 
-    def get_other_player(self):
+    def get_other_player_index(self):
         return int(not self.player_index)
 
     def switch_player(self):
-        self.player_index = self.get_other_player()
+        self.player_index = self.get_other_player_index()
 
     @staticmethod
     def is_line_equal(line: list):
@@ -154,6 +154,9 @@ class Board:
 ##################### AI ###########################
 
 def minmax(minmax_board: Board, maximizing: bool, evaluating: bool = True):
+    """ Minmax AI for Tic Tac Toe
+        When evaluating is True, returns the best evaluation of player
+        When evaluating is False, returns the best move on the board """
     min_eval = inf
     max_eval = -inf
     best_move = None

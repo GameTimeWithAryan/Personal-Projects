@@ -138,9 +138,8 @@ class PlayFair:
         pairs = []
         indices = []
         for index, char in enumerate(text):
-            if index != 0:
-                if text[index - 1] == text[index]:
-                    indices.append(index)
+            if index != 0 and text[index - 1] == text[index]:
+                indices.append(index)
         indices.reverse()
         for index in indices:
             text = text[:index] + self.PADDING + text[index:]
