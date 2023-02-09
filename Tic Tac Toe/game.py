@@ -1,3 +1,7 @@
+"""
+This file does not follow SOLID principles or any good coding techniques
+"""
+
 import pygame
 from board import Board, WinType
 
@@ -39,7 +43,7 @@ class ResetButton:
 
 
 def get_mark_color():
-    return "#FF615F" if game_board.get_player() == game_board.players[1] else "#3EC5F3"
+    return "#FF615F" if game_board.get_current_player() == game_board.players[1] else "#3EC5F3"
 
 
 def mouse_on_board(mouse_position):
@@ -167,7 +171,7 @@ while True:
             title = "Draw"
             game_over = True
         else:
-            title = game_board.get_player()
+            title = game_board.get_current_player()
 
     # Event Loop
     for event in pygame.event.get():
