@@ -17,115 +17,49 @@ class WinType(Enum):
     DIAGONAL = auto()
 
 
-class Board:
-    EMPTY_CELL = "_"
+class Grid:
+    def __init__(self, size: int):
+        """Generates a new grid of size, size * size"""
+        self.size: int = size
 
-    def __init__(self):
-        self.board = [[Board.EMPTY_CELL for _ in range(3)] for _ in range(3)]
-        self.players = ["X", "O"]
-        self.player_index = 0
+        self.grid: list[list[str]] = [[Board.EMPTY_CELL for _ in range(size)] for _ in range(size)]
+        self.has_moved: bool = False
 
-        self.moves_played = 0
-        self.winner = None
-        self.win_line = []
+        self.win_line: list[str] = []
         self.win_type: WinType | None = None
 
-    def reset(self):
-        self.__init__()
+    def get_cell(self, row: int, column: int):
+        return self.grid[row][column]
 
-    def print_board(self, board: list = None):
-        if board is None:
-            board = self.board
+    def make_move(self, mark: str, row: int, column: int):
+        self.grid[row][column] = mark
+        self.update_has_moved()
+
+    def print_grid(self):
+        column_label = " ".join([str(column_num + 1) for column_num in range(self.size)])
         print()
-        print("  1 2 3")
-        for index, row in enumerate(board):
+        print(f"  {column_label}")
+        for index, row in enumerate(self.grid):
             print(f'{index + 1} {" ".join(row)}')
         print()
 
-    def play_move(self, row: int, column: int):
-        if self.is_empty(row, column):
-            self.board[row][column] = self.get_current_player()
-            self.switch_player()
-            self.moves_played += 1
-            return True
-        return False
-
-    def unplay_move(self, row: int, column: int):
-        if not self.is_empty(row, column):
-            self.board[row][column] = Board.EMPTY_CELL
-            self.switch_player()
-            self.moves_played -= 1
-            return True
-        return False
-
-    def check_win(self):
-        if self.check_horizontal() or self.check_vertical() or self.check_diagonal():
-            self.winner = self.players[self.get_other_player_index()]
-            return True
-        return False
-
-    def check_draw(self):
-        for row in self.board:
-            if Board.EMPTY_CELL in row:
-                return False
-        return True
-
-    def get_legal_moves(self):
+    def get_legal_moves(self) -> list[tuple[int, int]]:
         legal_moves = []
-        for row_num, row in enumerate(self.board):
+        for row_num, row in enumerate(self.grid):
             for column_num, cell in enumerate(row):
                 if cell == Board.EMPTY_CELL:
                     legal_moves.append((row_num, column_num))
         return legal_moves
 
-    def check_horizontal(self):
-        for row_num, row in enumerate(self.board):
-            if self.is_line_equal(row):
-                self.win_line = [(row_num, column_num) for column_num in range(3)]
-                self.win_type = WinType.HORIZONTAL
-                return True
-        return False
+    def is_empty(self, row: int, column: int) -> bool:
+        return self.grid[row][column] == Board.EMPTY_CELL
 
-    def check_vertical(self):
-        for column_num in range(3):
-            column = [self.board[row_num][column_num] for row_num in range(3)]
-            if self.is_line_equal(column):
-                self.win_line = [(row_num, column_num) for row_num in range(3)]
-                self.win_type = WinType.VERTICAL
-                return True
-        return False
-
-    def check_diagonal(self):
-        diagonal_1 = [self.board[i][i] for i in range(3)]
-        diagonal_2 = [self.board[i][2 - i] for i in range(3)]
-
-        if self.is_line_equal(diagonal_1):
-            self.win_line = [(i, i) for i in range(3)]
-            self.win_type = WinType.DIAGONAL
-            return True
-        elif Board.is_line_equal(diagonal_2):
-            self.win_line = [(i, 2 - i) for i in range(3)]
-            self.win_type = WinType.DIAGONAL
-            return True
-        return False
-
-    def is_empty(self, row: int, column: int):
-        return self.board[row][column] == Board.EMPTY_CELL
-
-    def get_cell(self, row: int, column: int):
-        return self.board[row][column]
-
-    def get_current_player(self):
-        return self.players[self.player_index]
-
-    def get_other_player_index(self):
-        return int(not self.player_index)
-
-    def switch_player(self):
-        self.player_index = self.get_other_player_index()
+    def update_has_moved(self):
+        legal_moves = self.get_legal_moves()
+        self.has_moved = len(legal_moves) != self.size * self.size
 
     @staticmethod
-    def is_line_equal(line: list):
+    def is_line_equal(line: list) -> bool:
         check_item = line[0]
         if check_item == Board.EMPTY_CELL:
             return False
@@ -134,13 +68,96 @@ class Board:
                 return False
         return True
 
+
+class Board:
+    EMPTY_CELL = "_"
+
+    def __init__(self, grid: Grid):
+        self.grid: Grid = grid
+        self.player_index: int = 0
+        self.players: list[str] = ["X", "O"]
+        self.winner: str | None = None
+
+    def reset(self):
+        new_grid = Grid(size=self.grid.size)
+        self.__init__(new_grid)
+
+    def play_move(self, row: int, column: int) -> bool:
+        if self.grid.is_empty(row, column):
+            self.grid.make_move(self.get_current_player(), row, column)
+            self.switch_player()
+            return True
+        return False
+
+    def unplay_move(self, row: int, column: int) -> bool:
+        if not self.grid.is_empty(row, column):
+            self.grid.make_move(Board.EMPTY_CELL, row, column)
+            self.switch_player()
+            return True
+        return False
+
+    def check_win(self) -> bool:
+        if self.check_horizontal() or self.check_vertical() or self.check_diagonal():
+            self.winner = self.players[self.get_other_player_index()]
+            return True
+        return False
+
+    def check_draw(self) -> bool:
+        for row in self.grid.grid:
+            if Board.EMPTY_CELL in row:
+                return False
+        return True
+
+    def check_horizontal(self) -> bool:
+        grid_size = self.grid.size
+        for row_num, row in enumerate(self.grid.grid):
+            if self.grid.is_line_equal(row):
+                self.grid.win_line = [(row_num, column_num) for column_num in range(grid_size)]
+                self.grid.win_type = WinType.HORIZONTAL
+                return True
+        return False
+
+    def check_vertical(self) -> bool:
+        grid_size = self.grid.size
+        for column_num in range(grid_size):
+            column = [self.grid.grid[row_num][column_num] for row_num in range(grid_size)]
+            if self.grid.is_line_equal(column):
+                self.grid.win_line = [(row_num, column_num) for row_num in range(grid_size)]
+                self.grid.win_type = WinType.VERTICAL
+                return True
+        return False
+
+    def check_diagonal(self) -> bool:
+        grid_size = self.grid.size
+        diagonal_1 = [self.grid.grid[i][i] for i in range(grid_size)]
+        diagonal_2 = [self.grid.grid[i][(grid_size - 1) - i] for i in range(grid_size)]
+
+        if self.grid.is_line_equal(diagonal_1):
+            self.grid.win_line = [(i, i) for i in range(grid_size)]
+            self.grid.win_type = WinType.DIAGONAL
+            return True
+        elif self.grid.is_line_equal(diagonal_2):
+            self.grid.win_line = [(i, (grid_size - 1) - i) for i in range(grid_size)]
+            self.grid.win_type = WinType.DIAGONAL
+            return True
+        return False
+
+    def get_current_player(self) -> str:
+        return self.players[self.player_index]
+
+    def get_other_player_index(self) -> int:
+        return int(not self.player_index)
+
+    def switch_player(self):
+        self.player_index = self.get_other_player_index()
+
     def fix_attributes(self):
         """ Manually fix/assign attributes of the class by checking the board state
             Must be run when working with custom setup """
 
-        self.moves_played = len(self.get_legal_moves())
+        self.grid.update_has_moved()
 
-        if self.moves_played % 2 == 1:
+        if len(self.grid.get_legal_moves()) % 2 == 1:
             self.player_index = 0
         else:
             self.player_index = 1
@@ -161,26 +178,27 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
                     When evaluating is False, returns the best move on the board """
     min_eval = inf
     max_eval = -inf
-    best_move = None
+    best_move: tuple[int, int] | None = None
 
     if minmax_board.check_win():
         return -1 if maximizing else 1
     if minmax_board.check_draw():
         return 0
 
-    for move in minmax_board.get_legal_moves():
+    for move in minmax_board.grid.get_legal_moves():
         evaluation = evaluate(minmax_board, move, not maximizing)
         if maximizing:
             if evaluation > max_eval:
                 max_eval = evaluation
                 best_move = move
-            if evaluation == 1:
+            if max_eval == 1:
                 return max_eval if evaluating else best_move
+
         elif not maximizing:
             if evaluation < min_eval:
                 min_eval = evaluation
                 best_move = move
-            if evaluation == -1:
+            if min_eval == -1:
                 return min_eval if evaluating else best_move
 
     if evaluating:
@@ -188,7 +206,7 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
     return best_move
 
 
-def evaluate(board: Board, move: tuple, maximizing: bool):
+def evaluate(board: Board, move: tuple[int, int], maximizing: bool):
     board.play_move(move[0], move[1])
     evaluation = minmax(board, maximizing=maximizing, evaluating=True)
     board.unplay_move(move[0], move[1])
@@ -198,9 +216,8 @@ def evaluate(board: Board, move: tuple, maximizing: bool):
 ################## CUSTOM SETUP #########################
 def evaluate_position(board: Board):
     board.fix_attributes()
-
-    str_evaluations = []
-    legal_moves = board.get_legal_moves()
+    str_evaluations: list[str] = []
+    legal_moves = board.grid.get_legal_moves()
 
     if board.player_index == 0:
         eval_color_coding = {"0": Fore.BLUE, "1": Fore.GREEN, "-1": Fore.RED}
@@ -212,12 +229,12 @@ def evaluate_position(board: Board):
         str_evaluation = eval_color_coding[str_evaluation] + str_evaluation + Fore.RESET
         str_evaluations.append(str_evaluation)
 
-    eval_board = copy.deepcopy(board.board)
+    eval_grid = copy.deepcopy(board.grid)
     for index, (row, column) in enumerate(legal_moves):
-        eval_board[row][column] = str_evaluations[index]
+        eval_grid.grid[row][column] = str_evaluations[index]
 
     # PRINTING
-    board.print_board(eval_board)
+    eval_grid.print_grid()
     print(f"Player Turn: {board.get_current_player()}\n")
     print(" 0 - Draw")
     print(f" 1 - {board.players[0]} Wins")
@@ -226,10 +243,11 @@ def evaluate_position(board: Board):
 
 ############# MAIN #############
 def main():
-    custom_board = Board()
-    custom_board.board = [["X", Board.EMPTY_CELL, "O"],
-                          [Board.EMPTY_CELL, Board.EMPTY_CELL, Board.EMPTY_CELL],
-                          [Board.EMPTY_CELL, Board.EMPTY_CELL, Board.EMPTY_CELL]]
+    board_grid = Grid(3)
+    custom_board = Board(board_grid)
+    custom_board.grid.grid = [["X", Board.EMPTY_CELL, "O"],
+                              [Board.EMPTY_CELL, Board.EMPTY_CELL, Board.EMPTY_CELL],
+                              [Board.EMPTY_CELL, Board.EMPTY_CELL, Board.EMPTY_CELL]]
     evaluate_position(custom_board)
 
 

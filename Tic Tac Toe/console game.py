@@ -6,7 +6,7 @@ def console_game():
     print("<row> <column>\n")
 
     game_board = Board()
-    game_board.print_board()
+    game_board.print_grid()
     ai_mode = 0
 
     while True:
@@ -20,15 +20,15 @@ def console_game():
         move = input("Enter move - ")
         if move == "ai":
             game_board.ai_play()
-            game_board.print_board()
+            game_board.print_grid()
         else:
             row, column = map(int, move.split(" "))
             is_move_played = game_board.play_move(row - 1, column - 1)
             if is_move_played:
-                game_board.print_board()
+                game_board.print_grid()
                 if ai_mode:
                     game_board.ai_play()
-                    game_board.print_board()
+                    game_board.print_grid()
 
 
 if __name__ == '__main__':

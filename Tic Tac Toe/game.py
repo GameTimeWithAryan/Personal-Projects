@@ -3,7 +3,7 @@ This file does not follow SOLID principles or any good coding techniques
 """
 
 import pygame
-from board import Board, WinType
+from board import Board, WinType, Grid
 
 
 class ResetButton:
@@ -75,7 +75,7 @@ def draw_marks():
     # Draw marked marks on board
     for row_num in range(1, 4):
         for column_num in range(1, 4):
-            cell = game_board.get_cell(row_num - 1, column_num - 1)
+            cell = game_board.grid.get_cell(row_num - 1, column_num - 1)
             mark_pos_x = board_x_pos + board_size * column_num / 3 - board_size / 6
             mark_pos_y = board_y_pos + board_size * row_num / 3 - board_size / 6
             if cell == "X":
@@ -91,15 +91,15 @@ def draw_marks():
 
 def draw_win_line():
     # Draw line connecting winning marks
-    if not game_board.win_line:
+    if not game_board.grid.win_line:
         return
 
     adjustment = 45
     x_adjustment = 0
     y_adjustment = 0
     increment_1 = lambda x: (x[0] + 1, x[1] + 1)
-    win_start_row, win_start_column = increment_1(game_board.win_line[0])
-    win_end_row, win_end_column = increment_1(game_board.win_line[2])
+    win_start_row, win_start_column = increment_1(game_board.grid.win_line[0])
+    win_end_row, win_end_column = increment_1(game_board.grid.win_line[2])
 
     line_start_x = board_x_pos + win_start_column * board_size / 3 - board_size / 6  # Lift all four values more
     line_start_y = board_y_pos + win_start_row * board_size / 3 - board_size / 6
@@ -108,13 +108,13 @@ def draw_win_line():
 
     line_color = get_mark_color()
 
-    if game_board.win_type == WinType.HORIZONTAL:
+    if game_board.grid.win_type == WinType.HORIZONTAL:
         x_adjustment = adjustment
 
-    if game_board.win_type == WinType.VERTICAL:
+    if game_board.grid.win_type == WinType.VERTICAL:
         y_adjustment = adjustment
 
-    if game_board.win_type == WinType.DIAGONAL:
+    if game_board.grid.win_type == WinType.DIAGONAL:
         x_adjustment = y_adjustment = adjustment
 
     line_start_x -= x_adjustment
@@ -135,10 +135,12 @@ text_font = pygame.font.Font(None, 50)
 
 # Game variables
 # AI
+BOARD_SIZE = 3
 GAME_MODE = 1  # 0 for Single Player, 1 for AI
 AI_PLAYER = 1  # player index, [0, 1]
 
-game_board = Board()
+game_grid = Grid(BOARD_SIZE)
+game_board = Board(game_grid)
 
 game_over = False
 primary_color = "#14bdac"
@@ -195,7 +197,7 @@ while True:
     draw_win_line()
 
     # Reset Button
-    if game_board.moves_played:
+    if game_board.grid.has_moved:
         reset_button.update()
 
     # Title
