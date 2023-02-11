@@ -197,7 +197,7 @@ while True:
     draw_win_line()
 
     # Reset Button
-    if game_board.grid.has_moved:
+    if game_board.has_moved:
         reset_button.update()
 
     # Title

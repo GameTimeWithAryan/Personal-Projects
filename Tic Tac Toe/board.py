@@ -21,7 +21,6 @@ class Grid:
     def __init__(self, size: int):
         """Generates a new grid of size, size * size"""
         self.grid: list[list[str]] = [[Board.EMPTY_CELL for _ in range(size)] for _ in range(size)]
-        self.has_moved: bool = False
         self.size: int = size
 
     def get_cell(self, row: int, column: int) -> str:
@@ -29,7 +28,6 @@ class Grid:
 
     def make_move(self, mark: str, row: int, column: int):
         self.grid[row][column] = mark
-        self.update_has_moved()
 
     def print_grid(self):
         column_label = " ".join([str(column_num + 1) for column_num in range(self.size)])
@@ -50,10 +48,6 @@ class Grid:
     def is_empty(self, row: int, column: int) -> bool:
         return self.grid[row][column] == Board.EMPTY_CELL
 
-    def update_has_moved(self):
-        legal_moves = self.get_legal_moves()
-        self.has_moved = len(legal_moves) != self.size * self.size
-
     @staticmethod
     def is_line_equal(line: list) -> bool:
         check_item = line[0]
@@ -73,6 +67,7 @@ class Board:
 
         self.player_index: int = 0
         self.players: list[str] = ["X", "O"]
+        self.has_moved: bool = False
 
         self.winner: str | None = None
         self.win_line: list[str] = []
@@ -85,6 +80,7 @@ class Board:
     def play_move(self, row: int, column: int) -> bool:
         if self.grid.is_empty(row, column):
             self.grid.make_move(self.get_current_player(), row, column)
+            self.update_has_moved()
             self.switch_player()
             return True
         return False
@@ -92,6 +88,7 @@ class Board:
     def unplay_move(self, row: int, column: int) -> bool:
         if not self.grid.is_empty(row, column):
             self.grid.make_move(Board.EMPTY_CELL, row, column)
+            self.update_has_moved()
             self.switch_player()
             return True
         return False
@@ -151,11 +148,15 @@ class Board:
     def switch_player(self):
         self.player_index = self.get_other_player_index()
 
+    def update_has_moved(self):
+        legal_moves = self.grid.get_legal_moves()
+        self.has_moved = len(legal_moves) != self.grid.size ** 2
+
     def fix_attributes(self):
         """ Manually fix/assign attributes of the class by checking the board state
             Must be run when working with custom setup """
 
-        self.grid.update_has_moved()
+        self.update_has_moved()
 
         if len(self.grid.get_legal_moves()) % 2 == 1:
             self.player_index = 0
