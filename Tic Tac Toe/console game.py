@@ -1,12 +1,13 @@
-from board import Board
+from board import Board, Grid
 
 
 def console_game():
     print("Input format:")
     print("<row> <column>\n")
 
-    game_board = Board()
-    game_board.print_grid()
+    game_grid = Grid(3)
+    game_board = Board(game_grid)
+    game_board.grid.print_grid()
     ai_mode = 0
 
     while True:
@@ -20,15 +21,15 @@ def console_game():
         move = input("Enter move - ")
         if move == "ai":
             game_board.ai_play()
-            game_board.print_grid()
+            game_board.grid.print_grid()
         else:
             row, column = map(int, move.split(" "))
             is_move_played = game_board.play_move(row - 1, column - 1)
             if is_move_played:
-                game_board.print_grid()
+                game_board.grid.print_grid()
                 if ai_mode:
                     game_board.ai_play()
-                    game_board.print_grid()
+                    game_board.grid.print_grid()
 
 
 if __name__ == '__main__':

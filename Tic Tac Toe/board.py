@@ -20,15 +20,11 @@ class WinType(Enum):
 class Grid:
     def __init__(self, size: int):
         """Generates a new grid of size, size * size"""
-        self.size: int = size
-
         self.grid: list[list[str]] = [[Board.EMPTY_CELL for _ in range(size)] for _ in range(size)]
         self.has_moved: bool = False
+        self.size: int = size
 
-        self.win_line: list[str] = []
-        self.win_type: WinType | None = None
-
-    def get_cell(self, row: int, column: int):
+    def get_cell(self, row: int, column: int) -> str:
         return self.grid[row][column]
 
     def make_move(self, mark: str, row: int, column: int):
@@ -74,9 +70,13 @@ class Board:
 
     def __init__(self, grid: Grid):
         self.grid: Grid = grid
+
         self.player_index: int = 0
         self.players: list[str] = ["X", "O"]
+
         self.winner: str | None = None
+        self.win_line: list[str] = []
+        self.win_type: WinType | None = None
 
     def reset(self):
         new_grid = Grid(size=self.grid.size)
