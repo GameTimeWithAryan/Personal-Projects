@@ -78,20 +78,22 @@ class Board:
         self.__init__(new_grid)
 
     def play_move(self, row: int, column: int) -> bool:
-        if self.grid.is_empty(row, column):
-            self.grid.make_move(self.get_current_player(), row, column)
-            self.update_has_moved()
-            self.switch_player()
-            return True
-        return False
+        if not self.grid.is_empty(row, column):
+            return False
+
+        self.grid.make_move(self.get_current_player(), row, column)
+        self.update_has_moved()
+        self.switch_player()
+        return True
 
     def unplay_move(self, row: int, column: int) -> bool:
-        if not self.grid.is_empty(row, column):
-            self.grid.make_move(Board.EMPTY_CELL, row, column)
-            self.update_has_moved()
-            self.switch_player()
-            return True
-        return False
+        if self.grid.is_empty(row, column):
+            return False
+
+        self.grid.make_move(Board.EMPTY_CELL, row, column)
+        self.update_has_moved()
+        self.switch_player()
+        return True
 
     def check_win(self) -> bool:
         if self.check_horizontal() or self.check_vertical() or self.check_diagonal():
@@ -109,33 +111,33 @@ class Board:
         grid_size = self.grid.size
         for row_num, row in enumerate(self.grid.grid):
             if self.grid.is_line_equal(row):
-                self.grid.win_line = [(row_num, column_num) for column_num in range(grid_size)]
-                self.grid.win_type = WinType.HORIZONTAL
+                self.win_line = [(row_num, column_num) for column_num in range(grid_size)]
+                self.win_type = WinType.HORIZONTAL
                 return True
         return False
 
     def check_vertical(self) -> bool:
         grid_size = self.grid.size
         for column_num in range(grid_size):
-            column = [self.grid.grid[row_num][column_num] for row_num in range(grid_size)]
+            column = [self.grid.get_cell(row_num, column_num) for row_num in range(grid_size)]
             if self.grid.is_line_equal(column):
-                self.grid.win_line = [(row_num, column_num) for row_num in range(grid_size)]
-                self.grid.win_type = WinType.VERTICAL
+                self.win_line = [(row_num, column_num) for row_num in range(grid_size)]
+                self.win_type = WinType.VERTICAL
                 return True
         return False
 
     def check_diagonal(self) -> bool:
         grid_size = self.grid.size
-        diagonal_1 = [self.grid.grid[i][i] for i in range(grid_size)]
-        diagonal_2 = [self.grid.grid[i][(grid_size - 1) - i] for i in range(grid_size)]
+        diagonal_1 = [self.grid.get_cell(i, i) for i in range(grid_size)]
+        diagonal_2 = [self.grid.get_cell(i, (grid_size - 1) - i) for i in range(grid_size)]
 
         if self.grid.is_line_equal(diagonal_1):
-            self.grid.win_line = [(i, i) for i in range(grid_size)]
-            self.grid.win_type = WinType.DIAGONAL
+            self.win_line = [(i, i) for i in range(grid_size)]
+            self.win_type = WinType.DIAGONAL
             return True
         elif self.grid.is_line_equal(diagonal_2):
-            self.grid.win_line = [(i, (grid_size - 1) - i) for i in range(grid_size)]
-            self.grid.win_type = WinType.DIAGONAL
+            self.win_line = [(i, (grid_size - 1) - i) for i in range(grid_size)]
+            self.win_type = WinType.DIAGONAL
             return True
         return False
 
