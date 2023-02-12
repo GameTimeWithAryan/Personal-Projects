@@ -1,4 +1,4 @@
-from board import Board, Grid
+from board import Board, Grid, WinManager
 
 
 def console_game():
@@ -6,13 +6,14 @@ def console_game():
     print("<row> <column>\n")
 
     game_grid = Grid(3)
-    game_board = Board(game_grid)
+    win_manager = WinManager()
+    game_board = Board(game_grid, win_manager)
     game_board.grid.print_grid()
     ai_mode = 0
 
     while True:
         if game_board.check_win():
-            print(game_board.winner, "WON")
+            print(game_board.win_manager.winner, "WON")
             break
         elif game_board.check_draw():
             print("DRAW")

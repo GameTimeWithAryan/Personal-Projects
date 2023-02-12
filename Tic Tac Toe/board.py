@@ -1,7 +1,8 @@
 import copy
+from dataclasses import dataclass, field
 from math import inf
 from colorama import Fore
-from enum import Enum, auto
+from enum import StrEnum, auto
 
 
 # Board setup for custom use
@@ -11,7 +12,7 @@ from enum import Enum, auto
 #                       [Board.EMPTY_CELL, Board.EMPTY_CELL, Board.EMPTY_CELL]]
 
 
-class WinType(Enum):
+class WinType(StrEnum):
     HORIZONTAL = auto()
     VERTICAL = auto()
     DIAGONAL = auto()
@@ -20,13 +21,14 @@ class WinType(Enum):
 class Grid:
     def __init__(self, size: int):
         """Generates a new grid of size, size * size"""
+        self.has_moved: bool = False
         self.grid: list[list[str]] = [[Board.EMPTY_CELL for _ in range(size)] for _ in range(size)]
         self.size: int = size
 
     def get_cell(self, row: int, column: int) -> str:
         return self.grid[row][column]
 
-    def make_move(self, mark: str, row: int, column: int):
+    def update_cell(self, mark: str, row: int, column: int):
         self.grid[row][column] = mark
 
     def print_grid(self):
@@ -45,6 +47,10 @@ class Grid:
                     legal_moves.append((row_num, column_num))
         return legal_moves
 
+    def update_has_moved(self):
+        legal_moves = self.get_legal_moves()
+        self.has_moved = len(legal_moves) != self.size ** 2
+
     def is_empty(self, row: int, column: int) -> bool:
         return self.grid[row][column] == Board.EMPTY_CELL
 
@@ -59,30 +65,34 @@ class Grid:
         return True
 
 
+@dataclass
+class WinManager:
+    winner: str | None = None
+    win_type: WinType | None = None
+    win_line: list[tuple[int, int]] = field(default_factory=list)
+
+
 class Board:
     EMPTY_CELL = "_"
 
-    def __init__(self, grid: Grid):
-        self.grid: Grid = grid
-
+    def __init__(self, grid: Grid, win_manager: WinManager):
         self.player_index: int = 0
         self.players: list[str] = ["X", "O"]
-        self.has_moved: bool = False
 
-        self.winner: str | None = None
-        self.win_line: list[str] = []
-        self.win_type: WinType | None = None
+        self.win_manager = win_manager
+        self.grid: Grid = grid
 
     def reset(self):
         new_grid = Grid(size=self.grid.size)
-        self.__init__(new_grid)
+        new_win_manager = WinManager()
+        self.__init__(new_grid, new_win_manager)
 
     def play_move(self, row: int, column: int) -> bool:
         if not self.grid.is_empty(row, column):
             return False
 
-        self.grid.make_move(self.get_current_player(), row, column)
-        self.update_has_moved()
+        self.grid.update_cell(self.get_current_player(), row, column)
+        self.grid.update_has_moved()
         self.switch_player()
         return True
 
@@ -90,14 +100,14 @@ class Board:
         if self.grid.is_empty(row, column):
             return False
 
-        self.grid.make_move(Board.EMPTY_CELL, row, column)
-        self.update_has_moved()
+        self.grid.update_cell(Board.EMPTY_CELL, row, column)
+        self.grid.update_has_moved()
         self.switch_player()
         return True
 
     def check_win(self) -> bool:
         if self.check_horizontal() or self.check_vertical() or self.check_diagonal():
-            self.winner = self.players[self.get_other_player_index()]
+            self.win_manager.winner = self.players[self.get_other_player_index()]
             return True
         return False
 
@@ -110,34 +120,38 @@ class Board:
     def check_horizontal(self) -> bool:
         grid_size = self.grid.size
         for row_num, row in enumerate(self.grid.grid):
-            if self.grid.is_line_equal(row):
-                self.win_line = [(row_num, column_num) for column_num in range(grid_size)]
-                self.win_type = WinType.HORIZONTAL
-                return True
+            if not self.grid.is_line_equal(row):
+                continue
+
+            self.win_manager.win_line = [(row_num, column_num) for column_num in range(grid_size)]
+            self.win_manager.win_type = WinType.HORIZONTAL
+            return True
         return False
 
     def check_vertical(self) -> bool:
         grid_size = self.grid.size
         for column_num in range(grid_size):
             column = [self.grid.get_cell(row_num, column_num) for row_num in range(grid_size)]
-            if self.grid.is_line_equal(column):
-                self.win_line = [(row_num, column_num) for row_num in range(grid_size)]
-                self.win_type = WinType.VERTICAL
-                return True
+            if not self.grid.is_line_equal(column):
+                continue
+
+            self.win_manager.win_line = [(row_num, column_num) for row_num in range(grid_size)]
+            self.win_manager.win_type = WinType.VERTICAL
+            return True
         return False
 
     def check_diagonal(self) -> bool:
         grid_size = self.grid.size
         diagonal_1 = [self.grid.get_cell(i, i) for i in range(grid_size)]
-        diagonal_2 = [self.grid.get_cell(i, (grid_size - 1) - i) for i in range(grid_size)]
+        diagonal_2 = [self.grid.get_cell((grid_size - 1) - i, i) for i in range(grid_size)]
 
         if self.grid.is_line_equal(diagonal_1):
-            self.win_line = [(i, i) for i in range(grid_size)]
-            self.win_type = WinType.DIAGONAL
+            self.win_manager.win_line = [(i, i) for i in range(grid_size)]
+            self.win_manager.win_type = WinType.DIAGONAL
             return True
         elif self.grid.is_line_equal(diagonal_2):
-            self.win_line = [(i, (grid_size - 1) - i) for i in range(grid_size)]
-            self.win_type = WinType.DIAGONAL
+            self.win_manager.win_line = [((grid_size - 1) - i, i) for i in range(grid_size)]
+            self.win_manager.win_type = WinType.DIAGONAL
             return True
         return False
 
@@ -150,15 +164,11 @@ class Board:
     def switch_player(self):
         self.player_index = self.get_other_player_index()
 
-    def update_has_moved(self):
-        legal_moves = self.grid.get_legal_moves()
-        self.has_moved = len(legal_moves) != self.grid.size ** 2
-
     def fix_attributes(self):
         """ Manually fix/assign attributes of the class by checking the board state
             Must be run when working with custom setup """
 
-        self.update_has_moved()
+        self.grid.update_has_moved()
 
         if len(self.grid.get_legal_moves()) % 2 == 1:
             self.player_index = 0
@@ -247,11 +257,9 @@ def evaluate_position(board: Board):
 ############# MAIN #############
 def main():
     board_grid = Grid(3)
-    custom_board = Board(board_grid)
-    custom_board.grid.grid = [["X", Board.EMPTY_CELL, "O"],
-                              [Board.EMPTY_CELL, Board.EMPTY_CELL, Board.EMPTY_CELL],
-                              [Board.EMPTY_CELL, Board.EMPTY_CELL, Board.EMPTY_CELL]]
-    evaluate_position(custom_board)
+    win_manager = WinManager()
+    custom_board = Board(board_grid, win_manager)
+    custom_board.grid.print_grid()
 
 
 if __name__ == '__main__':

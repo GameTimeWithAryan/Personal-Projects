@@ -3,7 +3,7 @@ This file does not follow SOLID principles or any good coding techniques
 """
 
 import pygame
-from board import Board, WinType, Grid
+from board import Board, WinType, Grid, WinManager
 
 
 class ResetButton:
@@ -91,31 +91,36 @@ def draw_marks():
 
 def draw_win_line():
     # Draw line connecting winning marks
-    if not game_board.win_line:
+    if not game_board.win_manager.win_line:
         return
 
     adjustment = 45
     x_adjustment = 0
     y_adjustment = 0
-    increment_1 = lambda x: (x[0] + 1, x[1] + 1)
-    win_start_row, win_start_column = increment_1(game_board.win_line[0])
-    win_end_row, win_end_column = increment_1(game_board.win_line[2])
 
-    line_start_x = board_x_pos + win_start_column * board_size / 3 - board_size / 6  # Lift all four values more
-    line_start_y = board_y_pos + win_start_row * board_size / 3 - board_size / 6
-    line_end_x = board_x_pos + win_end_column * board_size / 3 - board_size / 6
-    line_end_y = board_y_pos + win_end_row * board_size / 3 - board_size / 6
+    increment_1 = lambda x: (x[0] + 1, x[1] + 1)
+    win_start_row, win_start_column = increment_1(game_board.win_manager.win_line[0])
+    win_end_row, win_end_column = increment_1(game_board.win_manager.win_line[2])
+
+    line_start_x = board_x_pos + win_start_row * board_size / 3 - board_size / 6  # Lift all four values more
+    line_start_y = board_y_pos + win_start_column * board_size / 3 - board_size / 6
+    line_end_x = board_x_pos + win_end_row * board_size / 3 - board_size / 6
+    line_end_y = board_y_pos + win_end_column * board_size / 3 - board_size / 6
 
     line_color = get_mark_color()
 
-    if game_board.win_type == WinType.HORIZONTAL:
+    if game_board.win_manager.win_type == WinType.HORIZONTAL:
         x_adjustment = adjustment
 
-    if game_board.win_type == WinType.VERTICAL:
+    if game_board.win_manager.win_type == WinType.VERTICAL:
         y_adjustment = adjustment
 
-    if game_board.win_type == WinType.DIAGONAL:
-        x_adjustment = y_adjustment = adjustment
+    if game_board.win_manager.win_type == WinType.DIAGONAL:
+        if game_board.win_manager.win_line == [(i, i) for i in range(game_grid.size)]:
+            x_adjustment = y_adjustment = adjustment
+        else:
+            x_adjustment = -adjustment
+            y_adjustment = adjustment
 
     line_start_x -= x_adjustment
     line_end_x += x_adjustment
@@ -140,7 +145,8 @@ GAME_MODE = 1  # 0 for Single Player, 1 for AI
 AI_PLAYER = 1  # player index, [0, 1]
 
 game_grid = Grid(BOARD_SIZE)
-game_board = Board(game_grid)
+win_manager = WinManager()
+game_board = Board(game_grid, win_manager)
 
 game_over = False
 primary_color = "#14bdac"
@@ -167,7 +173,7 @@ if GAME_MODE == 1:
 while True:
     if not game_over:
         if game_board.check_win():
-            title = f"Winner: {game_board.winner}"
+            title = f"Winner: {game_board.win_manager.winner}"
             game_over = True
         elif game_board.check_draw():
             title = "Draw"
@@ -197,7 +203,7 @@ while True:
     draw_win_line()
 
     # Reset Button
-    if game_board.has_moved:
+    if game_board.grid.has_moved:
         reset_button.update()
 
     # Title
