@@ -18,6 +18,13 @@ class WinType(StrEnum):
     DIAGONAL = auto()
 
 
+@dataclass
+class WinManager:
+    winner: str | None = None
+    win_type: WinType | None = None
+    win_line: list[tuple[int, int]] = field(default_factory=list)
+
+
 class Grid:
     def __init__(self, size: int):
         """Generates a new grid of size, size * size"""
@@ -65,13 +72,6 @@ class Grid:
         return True
 
 
-@dataclass
-class WinManager:
-    winner: str | None = None
-    win_type: WinType | None = None
-    win_line: list[tuple[int, int]] = field(default_factory=list)
-
-
 class Board:
     EMPTY_CELL = "_"
 
@@ -83,8 +83,8 @@ class Board:
         self.grid: Grid = grid
 
     def reset(self):
-        new_grid = Grid(size=self.grid.size)
         new_win_manager = WinManager()
+        new_grid = Grid(size=self.grid.size)
         self.__init__(new_grid, new_win_manager)
 
     def play_move(self, row: int, column: int) -> bool:

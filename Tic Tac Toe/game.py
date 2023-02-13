@@ -5,6 +5,11 @@ This file does not follow SOLID principles or any good coding techniques
 import pygame
 from board import Board, WinType, Grid, WinManager
 
+# Game variables
+BOARD_SIZE = 3
+GAME_MODE = 1  # 0 for Single Player, 1 for AI
+AI_PLAYER = 1  # player index, [0, 1]
+
 
 class ResetButton:
     def __init__(self, text: str, size, position):
@@ -137,12 +142,6 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Tic Tac Toe')
 clock = pygame.time.Clock()
 text_font = pygame.font.Font(None, 50)
-
-# Game variables
-# AI
-BOARD_SIZE = 3
-GAME_MODE = 1  # 0 for Single Player, 1 for AI
-AI_PLAYER = 1  # player index, [0, 1]
 
 game_grid = Grid(BOARD_SIZE)
 win_manager = WinManager()
