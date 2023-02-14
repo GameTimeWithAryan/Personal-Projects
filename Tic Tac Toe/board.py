@@ -1,8 +1,7 @@
 import copy
-from dataclasses import dataclass, field
 from math import inf
 from colorama import Fore
-from enum import StrEnum, auto
+from win_manager import WinType, WinManager
 
 
 # Board setup for custom use
@@ -11,25 +10,13 @@ from enum import StrEnum, auto
 #                       [Board.EMPTY_CELL, Board.EMPTY_CELL, Board.EMPTY_CELL],
 #                       [Board.EMPTY_CELL, Board.EMPTY_CELL, Board.EMPTY_CELL]]
 
-
-class WinType(StrEnum):
-    HORIZONTAL = auto()
-    VERTICAL = auto()
-    DIAGONAL = auto()
-
-
-@dataclass
-class WinManager:
-    winner: str | None = None
-    win_type: WinType | None = None
-    win_line: list[tuple[int, int]] = field(default_factory=list)
-
-
 class Grid:
+    EMPTY_CELL = "_"
+
     def __init__(self, size: int):
         """Generates a new grid of size, size * size"""
         self.has_moved: bool = False
-        self.grid: list[list[str]] = [[Board.EMPTY_CELL for _ in range(size)] for _ in range(size)]
+        self.grid: list[list[str]] = [[Grid.EMPTY_CELL for _ in range(size)] for _ in range(size)]
         self.size: int = size
 
     def get_cell(self, row: int, column: int) -> str:
@@ -50,7 +37,7 @@ class Grid:
         legal_moves = []
         for row_num, row in enumerate(self.grid):
             for column_num, cell in enumerate(row):
-                if cell == Board.EMPTY_CELL:
+                if cell == Grid.EMPTY_CELL:
                     legal_moves.append((row_num, column_num))
         return legal_moves
 
@@ -59,12 +46,12 @@ class Grid:
         self.has_moved = len(legal_moves) != self.size ** 2
 
     def is_empty(self, row: int, column: int) -> bool:
-        return self.grid[row][column] == Board.EMPTY_CELL
+        return self.grid[row][column] == Grid.EMPTY_CELL
 
     @staticmethod
     def is_line_equal(line: list) -> bool:
         check_item = line[0]
-        if check_item == Board.EMPTY_CELL:
+        if check_item == Grid.EMPTY_CELL:
             return False
         for item in line[1:]:
             if item != check_item:
@@ -73,7 +60,6 @@ class Grid:
 
 
 class Board:
-    EMPTY_CELL = "_"
 
     def __init__(self, grid: Grid, win_manager: WinManager):
         self.player_index: int = 0
@@ -100,7 +86,7 @@ class Board:
         if self.grid.is_empty(row, column):
             return False
 
-        self.grid.update_cell(Board.EMPTY_CELL, row, column)
+        self.grid.update_cell(Grid.EMPTY_CELL, row, column)
         self.grid.update_has_moved()
         self.switch_player()
         return True
@@ -113,47 +99,48 @@ class Board:
 
     def check_draw(self) -> bool:
         for row in self.grid.grid:
-            if Board.EMPTY_CELL in row:
+            if Grid.EMPTY_CELL in row:
                 return False
         return True
 
     def check_horizontal(self) -> bool:
-        grid_size = self.grid.size
         for row_num, row in enumerate(self.grid.grid):
             if not self.grid.is_line_equal(row):
                 continue
 
-            self.win_manager.win_line = [(row_num, column_num) for column_num in range(grid_size)]
+            self.win_manager.win_line = [(row_num, column_num) for column_num in range(self.grid.size)]
             self.win_manager.win_type = WinType.HORIZONTAL
             return True
         return False
 
     def check_vertical(self) -> bool:
-        grid_size = self.grid.size
-        for column_num in range(grid_size):
-            column = [self.grid.get_cell(row_num, column_num) for row_num in range(grid_size)]
+        for column_num in range(self.grid.size):
+            column = [self.grid.get_cell(row_num, column_num) for row_num in range(self.grid.size)]
             if not self.grid.is_line_equal(column):
                 continue
 
-            self.win_manager.win_line = [(row_num, column_num) for row_num in range(grid_size)]
+            self.win_manager.win_line = [(row_num, column_num) for row_num in range(self.grid.size)]
             self.win_manager.win_type = WinType.VERTICAL
             return True
         return False
 
     def check_diagonal(self) -> bool:
+        win_diagonal = None
         grid_size = self.grid.size
         diagonal_1 = [self.grid.get_cell(i, i) for i in range(grid_size)]
         diagonal_2 = [self.grid.get_cell((grid_size - 1) - i, i) for i in range(grid_size)]
 
         if self.grid.is_line_equal(diagonal_1):
-            self.win_manager.win_line = [(i, i) for i in range(grid_size)]
-            self.win_manager.win_type = WinType.DIAGONAL
-            return True
+            win_diagonal = [(i, i) for i in range(grid_size)]
         elif self.grid.is_line_equal(diagonal_2):
-            self.win_manager.win_line = [((grid_size - 1) - i, i) for i in range(grid_size)]
-            self.win_manager.win_type = WinType.DIAGONAL
-            return True
-        return False
+            win_diagonal = [((grid_size - 1) - i, i) for i in range(grid_size)]
+
+        if not win_diagonal:
+            return False
+
+        self.win_manager.win_line = win_diagonal
+        self.win_manager.win_type = WinType.DIAGONAL
+        return True
 
     def get_current_player(self) -> str:
         return self.players[self.player_index]
