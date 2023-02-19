@@ -1,4 +1,5 @@
-from board import Board, Grid, WinManager
+from board import Board
+
 
 BOARD_SIZE = 3
 AI_MODE = 0
@@ -8,9 +9,7 @@ def console_game():
     print("Input format:")
     print("<row> <column>\n")
 
-    game_grid = Grid(3)
-    win_manager = WinManager()
-    game_board = Board(game_grid, win_manager)
+    game_board = Board(3)
     game_board.grid.print_grid()
 
     while True:

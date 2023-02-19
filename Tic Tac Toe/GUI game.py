@@ -3,7 +3,8 @@ This file does not follow SOLID principles or any good coding techniques
 """
 
 import pygame
-from board import Board, WinType, Grid, WinManager
+from board import Board
+from win_manager import WinType
 
 # Game variables
 BOARD_SIZE = 3
@@ -121,7 +122,7 @@ def draw_win_line():
         y_adjustment = adjustment
 
     if game_board.win_manager.win_type == WinType.DIAGONAL:
-        if game_board.win_manager.win_line == [(i, i) for i in range(game_grid.size)]:
+        if game_board.win_manager.win_line == [(i, i) for i in range(game_board.grid.size)]:
             x_adjustment = y_adjustment = adjustment
         else:
             x_adjustment = -adjustment
@@ -143,9 +144,7 @@ pygame.display.set_caption('Tic Tac Toe')
 clock = pygame.time.Clock()
 text_font = pygame.font.Font(None, 50)
 
-game_grid = Grid(BOARD_SIZE)
-win_manager = WinManager()
-game_board = Board(game_grid, win_manager)
+game_board = Board(BOARD_SIZE)
 
 game_over = False
 primary_color = "#14bdac"

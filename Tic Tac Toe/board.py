@@ -1,6 +1,8 @@
 import copy
 from math import inf
 from colorama import Fore
+
+from grid import Grid
 from win_manager import WinType, WinManager
 
 
@@ -9,69 +11,20 @@ from win_manager import WinType, WinManager
 # custom_board.board = [[Board.EMPTY_CELL, Board.EMPTY_CELL, Board.EMPTY_CELL],
 #                       [Board.EMPTY_CELL, Board.EMPTY_CELL, Board.EMPTY_CELL],
 #                       [Board.EMPTY_CELL, Board.EMPTY_CELL, Board.EMPTY_CELL]]
-
-class Grid:
-    EMPTY_CELL = "_"
-
-    def __init__(self, size: int):
-        """Generates a new grid of size, size * size"""
-        self.has_moved: bool = False
-        self.grid: list[list[str]] = [[Grid.EMPTY_CELL for _ in range(size)] for _ in range(size)]
-        self.size: int = size
-
-    def get_cell(self, row: int, column: int) -> str:
-        return self.grid[row][column]
-
-    def update_cell(self, mark: str, row: int, column: int):
-        self.grid[row][column] = mark
-
-    def print_grid(self):
-        column_label = " ".join([str(column_num + 1) for column_num in range(self.size)])
-        print()
-        print(f"  {column_label}")
-        for index, row in enumerate(self.grid):
-            print(f'{index + 1} {" ".join(row)}')
-        print()
-
-    def get_legal_moves(self) -> list[tuple[int, int]]:
-        legal_moves = []
-        for row_num, row in enumerate(self.grid):
-            for column_num, cell in enumerate(row):
-                if cell == Grid.EMPTY_CELL:
-                    legal_moves.append((row_num, column_num))
-        return legal_moves
-
-    def update_has_moved(self):
-        legal_moves = self.get_legal_moves()
-        self.has_moved = len(legal_moves) != self.size ** 2
-
-    def is_empty(self, row: int, column: int) -> bool:
-        return self.grid[row][column] == Grid.EMPTY_CELL
-
-    @staticmethod
-    def is_line_equal(line: list) -> bool:
-        check_item = line[0]
-        if check_item == Grid.EMPTY_CELL:
-            return False
-        for item in line[1:]:
-            if item != check_item:
-                return False
-        return True
+# custom_board.fix_attributes()
 
 
 class Board:
 
-    def __init__(self, grid: Grid, win_manager: WinManager):
+    def __init__(self, size: int = 3):
         self.player_index: int = 0
         self.players: list[str] = ["X", "O"]
 
-        self.win_manager = win_manager
-        self.grid: Grid = grid
+        self.grid: Grid = Grid(size)
+        self.win_manager = WinManager()
 
     def reset(self):
-        new_win_manager = WinManager()
-        new_grid = Grid(size=self.grid.size)
-        self.__init__(new_grid, new_win_manager)
+        self.__init__(self.grid.size)
 
     def play_move(self, row: int, column: int) -> bool:
         if not self.grid.is_empty(row, column):
@@ -105,6 +58,7 @@ class Board:
 
     def check_horizontal(self) -> bool:
         for row_num, row in enumerate(self.grid.grid):
+
             if not self.grid.is_line_equal(row):
                 continue
 
@@ -116,6 +70,7 @@ class Board:
     def check_vertical(self) -> bool:
         for column_num in range(self.grid.size):
             column = [self.grid.get_cell(row_num, column_num) for row_num in range(self.grid.size)]
+
             if not self.grid.is_line_equal(column):
                 continue
 
@@ -132,6 +87,7 @@ class Board:
 
         if self.grid.is_line_equal(diagonal_1):
             win_diagonal = [(i, i) for i in range(grid_size)]
+
         elif self.grid.is_line_equal(diagonal_2):
             win_diagonal = [((grid_size - 1) - i, i) for i in range(grid_size)]
 
@@ -215,7 +171,6 @@ def evaluate(board: Board, move: tuple[int, int], maximizing: bool):
 
 ################## CUSTOM SETUP #########################
 def evaluate_position(board: Board):
-    board.fix_attributes()
     str_evaluations: list[str] = []
     legal_moves = board.grid.get_legal_moves()
 
@@ -231,7 +186,7 @@ def evaluate_position(board: Board):
 
     eval_grid = copy.deepcopy(board.grid)
     for index, (row, column) in enumerate(legal_moves):
-        eval_grid.grid[row][column] = str_evaluations[index]
+        eval_grid.update_cell(str_evaluations[index], row, column)
 
     # PRINTING
     eval_grid.print_grid()
@@ -243,10 +198,8 @@ def evaluate_position(board: Board):
 
 ############# MAIN #############
 def main():
-    board_grid = Grid(3)
-    win_manager = WinManager()
-    custom_board = Board(board_grid, win_manager)
-    custom_board.grid.print_grid()
+    board = Board(3)
+    board.grid.print_grid()
 
 
 if __name__ == '__main__':
