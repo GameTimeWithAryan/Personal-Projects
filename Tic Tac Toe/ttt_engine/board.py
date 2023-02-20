@@ -2,8 +2,8 @@ import copy
 from math import inf
 from colorama import Fore
 
-from grid import Grid
-from win_manager import WinType, WinManager
+from .grid import Grid
+from .win_manager import WinType, WinManager
 
 
 # Board setup for custom use
@@ -194,13 +194,3 @@ def evaluate_position(board: Board):
     print(" 0 - Draw")
     print(f" 1 - {board.players[0]} Wins")
     print(f"-1 - {board.players[1]} Wins")
-
-
-############# MAIN #############
-def main():
-    board = Board(3)
-    board.grid.print_grid()
-
-
-if __name__ == '__main__':
-    main()

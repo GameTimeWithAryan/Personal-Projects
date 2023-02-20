@@ -1,10 +1,11 @@
 """
 This file does not follow SOLID principles or any good coding techniques
+Method for drawing the win line is a broken
 """
 
 import pygame
-from board import Board
-from win_manager import WinType
+from ttt_engine import Board
+from ttt_engine import WinType
 
 # Game variables
 BOARD_SIZE = 3
