@@ -1,52 +1,69 @@
+"""
+Main Module for using the tic tac toe engine
+Contains Board class to control the board and play the game
+
+Usage
+-----
+Defining a board:
+`game_board = Board()`
+
+Board setup for custom use:
+`custom_board = Board()
+custom_board.grid.grid = [[custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL],
+                         [custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL],
+                         [custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL]]
+custom_board.fix_attributes()`
+
+Here custom_board.EMPTY_CELL can be swapped for any mark from the custom_board.players list
+Then fix_attributes method is run to select which player's turn it is and update Grid.has_moved attribute
+"""
+
 import copy
 from math import inf
 from colorama import Fore
 
 from .grid import Grid
-from .win_manager import WinType, WinManager
-
-
-# Board setup for custom use
-# custom_board = Board()
-# custom_board.board = [[Board.EMPTY_CELL, Board.EMPTY_CELL, Board.EMPTY_CELL],
-#                       [Board.EMPTY_CELL, Board.EMPTY_CELL, Board.EMPTY_CELL],
-#                       [Board.EMPTY_CELL, Board.EMPTY_CELL, Board.EMPTY_CELL]]
-# custom_board.fix_attributes()
+from .win_data import WinType, WinData
 
 
 class Board:
+    """Board class for managing the game
+
+    Attributes
+    ----------
+        player_index : int
+            Current player index, keeps track of whose turn to move is it
+        players : list[str]
+            A list of marks which will be used to play the game
+            When a move is played, the board will be updated using these marks
+        grid : Grid
+            Instance of Grid class for managing the grid
+        win_data : WinData
+            Instance of WinData class for maintain data about which player won the game and how
+    """
 
     def __init__(self, size: int = 3):
         self.player_index: int = 0
         self.players: list[str] = ["X", "O"]
 
         self.grid: Grid = Grid(size)
-        self.win_manager = WinManager()
+        self.win_data = WinData()
 
     def reset(self):
         self.__init__(self.grid.size)
 
-    def play_move(self, row: int, column: int) -> bool:
-        if not self.grid.is_empty(row, column):
-            return False
+    def play_move(self, row: int, column: int, unplay: bool = False):
+        mark = self.get_current_player()
+        if unplay:
+            mark = self.grid.EMPTY_CELL
 
-        self.grid.update_cell(self.get_current_player(), row, column)
+        self.grid.update_cell(row, column, mark)
         self.grid.update_has_moved()
         self.switch_player()
-        return True
-
-    def unplay_move(self, row: int, column: int) -> bool:
-        if self.grid.is_empty(row, column):
-            return False
-
-        self.grid.update_cell(Grid.EMPTY_CELL, row, column)
-        self.grid.update_has_moved()
-        self.switch_player()
-        return True
 
     def check_win(self) -> bool:
         if self.check_horizontal() or self.check_vertical() or self.check_diagonal():
-            self.win_manager.winner = self.players[self.get_other_player_index()]
+            self.win_data.winner = self.players[self.get_other_player_index()]
             return True
         return False
 
@@ -59,24 +76,22 @@ class Board:
     def check_horizontal(self) -> bool:
         for row_num, row in enumerate(self.grid.grid):
 
-            if not self.grid.is_line_equal(row):
-                continue
+            if self.grid.is_line_winning(row):
+                self.win_data.win_line = [(row_num, column_num) for column_num in range(self.grid.size)]
+                self.win_data.win_type = WinType.HORIZONTAL
+                return True
 
-            self.win_manager.win_line = [(row_num, column_num) for column_num in range(self.grid.size)]
-            self.win_manager.win_type = WinType.HORIZONTAL
-            return True
         return False
 
     def check_vertical(self) -> bool:
         for column_num in range(self.grid.size):
             column = [self.grid.get_cell(row_num, column_num) for row_num in range(self.grid.size)]
 
-            if not self.grid.is_line_equal(column):
-                continue
+            if self.grid.is_line_winning(column):
+                self.win_data.win_line = [(row_num, column_num) for row_num in range(self.grid.size)]
+                self.win_data.win_type = WinType.VERTICAL
+                return True
 
-            self.win_manager.win_line = [(row_num, column_num) for row_num in range(self.grid.size)]
-            self.win_manager.win_type = WinType.VERTICAL
-            return True
         return False
 
     def check_diagonal(self) -> bool:
@@ -85,17 +100,17 @@ class Board:
         diagonal_1 = [self.grid.get_cell(i, i) for i in range(grid_size)]
         diagonal_2 = [self.grid.get_cell((grid_size - 1) - i, i) for i in range(grid_size)]
 
-        if self.grid.is_line_equal(diagonal_1):
+        if self.grid.is_line_winning(diagonal_1):
             win_diagonal = [(i, i) for i in range(grid_size)]
 
-        elif self.grid.is_line_equal(diagonal_2):
+        elif self.grid.is_line_winning(diagonal_2):
             win_diagonal = [((grid_size - 1) - i, i) for i in range(grid_size)]
 
         if not win_diagonal:
             return False
 
-        self.win_manager.win_line = win_diagonal
-        self.win_manager.win_type = WinType.DIAGONAL
+        self.win_data.win_line = win_diagonal
+        self.win_data.win_type = WinType.DIAGONAL
         return True
 
     def get_current_player(self) -> str:
@@ -165,7 +180,7 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
 def evaluate(board: Board, move: tuple[int, int], maximizing: bool):
     board.play_move(move[0], move[1])
     evaluation = minmax(board, maximizing=maximizing, evaluating=True)
-    board.unplay_move(move[0], move[1])
+    board.play_move(move[0], move[1], unplay=True)
     return evaluation
 
 
@@ -186,7 +201,7 @@ def evaluate_position(board: Board):
 
     eval_grid = copy.deepcopy(board.grid)
     for index, (row, column) in enumerate(legal_moves):
-        eval_grid.update_cell(str_evaluations[index], row, column)
+        eval_grid.update_cell(row, column, str_evaluations[index])
 
     # PRINTING
     eval_grid.print_grid()

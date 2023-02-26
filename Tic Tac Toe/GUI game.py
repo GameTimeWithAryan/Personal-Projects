@@ -4,8 +4,7 @@ Method for drawing the win line is a broken
 """
 
 import pygame
-from ttt_engine import Board
-from ttt_engine import WinType
+from ttt_engine import Board, WinType
 
 # Game variables
 BOARD_SIZE = 3
@@ -98,7 +97,7 @@ def draw_marks():
 
 def draw_win_line():
     # Draw line connecting winning marks
-    if not game_board.win_manager.win_line:
+    if not game_board.win_data.win_line:
         return
 
     adjustment = 45
@@ -106,8 +105,8 @@ def draw_win_line():
     y_adjustment = 0
 
     increment_1 = lambda x: (x[0] + 1, x[1] + 1)
-    win_start_row, win_start_column = increment_1(game_board.win_manager.win_line[0])
-    win_end_row, win_end_column = increment_1(game_board.win_manager.win_line[2])
+    win_start_row, win_start_column = increment_1(game_board.win_data.win_line[0])
+    win_end_row, win_end_column = increment_1(game_board.win_data.win_line[2])
 
     line_start_x = board_x_pos + win_start_row * board_size / 3 - board_size / 6  # Lift all four values more
     line_start_y = board_y_pos + win_start_column * board_size / 3 - board_size / 6
@@ -116,14 +115,14 @@ def draw_win_line():
 
     line_color = get_mark_color()
 
-    if game_board.win_manager.win_type == WinType.HORIZONTAL:
+    if game_board.win_data.win_type == WinType.HORIZONTAL:
         x_adjustment = adjustment
 
-    if game_board.win_manager.win_type == WinType.VERTICAL:
+    if game_board.win_data.win_type == WinType.VERTICAL:
         y_adjustment = adjustment
 
-    if game_board.win_manager.win_type == WinType.DIAGONAL:
-        if game_board.win_manager.win_line == [(i, i) for i in range(game_board.grid.size)]:
+    if game_board.win_data.win_type == WinType.DIAGONAL:
+        if game_board.win_data.win_line == [(i, i) for i in range(game_board.grid.size)]:
             x_adjustment = y_adjustment = adjustment
         else:
             x_adjustment = -adjustment
@@ -172,7 +171,7 @@ if GAME_MODE == 1:
 while True:
     if not game_over:
         if game_board.check_win():
-            title = f"Winner: {game_board.win_manager.winner}"
+            title = f"Winner: {game_board.win_data.winner}"
             game_over = True
         elif game_board.check_draw():
             title = "Draw"

@@ -1,2 +1,2 @@
 from .board import Board
-from .win_manager import WinType
+from .win_data import WinType

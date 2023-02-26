@@ -1,7 +1,6 @@
 from ttt_engine import Board
 
 game_board = Board(3)
-BOARD_SIZE = 3
 
 
 def get_move() -> str | tuple[int, int]:
@@ -51,7 +50,7 @@ def console_game():
 
     while True:
         if game_board.check_win():
-            print(game_board.win_manager.winner, "WON")
+            print(game_board.win_data.winner, "WON")
             break
 
         elif game_board.check_draw():
