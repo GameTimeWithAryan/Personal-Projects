@@ -23,7 +23,8 @@ from math import inf
 from colorama import Fore
 
 from .grid import Grid
-from .win_data import WinType, WinData
+from .win_data import WinData
+from .state_checker import StateChecker
 
 
 class Board:
@@ -40,6 +41,11 @@ class Board:
             Instance of Grid class for managing the grid
         win_data : WinData
             Instance of WinData class for maintain data about which player won the game and how
+        state : StateChecker
+            Instance of StateChecker to check wins or draws and update win_data accordingly
+
+    Methods
+    -------
     """
 
     def __init__(self, size: int = 3):
@@ -47,12 +53,24 @@ class Board:
         self.players: list[str] = ["X", "O"]
 
         self.grid: Grid = Grid(size)
-        self.win_data = WinData()
+        self.win_data: WinData = WinData()
+        self.state: StateChecker = StateChecker(self.grid, self.win_data)
 
     def reset(self):
         self.__init__(self.grid.size)
 
     def play_move(self, row: int, column: int, unplay: bool = False):
+        """Plays a move on the grid and updates current player
+
+        Parameters
+        ----------
+            row : int
+                Row number on which to play the move
+            column : int
+                Column number on which to play the move
+            unplay : bool
+                If True, play_move marks an Empty cell on the given coordinate i.e. unplays the move
+                If False, marks the player whose turn it was on the given coordinate"""
         mark = self.get_current_player()
         if unplay:
             mark = self.grid.EMPTY_CELL
@@ -61,70 +79,24 @@ class Board:
         self.grid.update_has_moved()
         self.switch_player()
 
-    def check_win(self) -> bool:
-        if self.check_horizontal() or self.check_vertical() or self.check_diagonal():
-            self.win_data.winner = self.players[self.get_other_player_index()]
-            return True
-        return False
-
-    def check_draw(self) -> bool:
-        for row in self.grid.grid:
-            if Grid.EMPTY_CELL in row:
-                return False
-        return True
-
-    def check_horizontal(self) -> bool:
-        for row_num, row in enumerate(self.grid.grid):
-
-            if self.grid.is_line_winning(row):
-                self.win_data.win_line = [(row_num, column_num) for column_num in range(self.grid.size)]
-                self.win_data.win_type = WinType.HORIZONTAL
-                return True
-
-        return False
-
-    def check_vertical(self) -> bool:
-        for column_num in range(self.grid.size):
-            column = [self.grid.get_cell(row_num, column_num) for row_num in range(self.grid.size)]
-
-            if self.grid.is_line_winning(column):
-                self.win_data.win_line = [(row_num, column_num) for row_num in range(self.grid.size)]
-                self.win_data.win_type = WinType.VERTICAL
-                return True
-
-        return False
-
-    def check_diagonal(self) -> bool:
-        win_diagonal = None
-        grid_size = self.grid.size
-        diagonal_1 = [self.grid.get_cell(i, i) for i in range(grid_size)]
-        diagonal_2 = [self.grid.get_cell((grid_size - 1) - i, i) for i in range(grid_size)]
-
-        if self.grid.is_line_winning(diagonal_1):
-            win_diagonal = [(i, i) for i in range(grid_size)]
-
-        elif self.grid.is_line_winning(diagonal_2):
-            win_diagonal = [((grid_size - 1) - i, i) for i in range(grid_size)]
-
-        if not win_diagonal:
-            return False
-
-        self.win_data.win_line = win_diagonal
-        self.win_data.win_type = WinType.DIAGONAL
-        return True
-
     def get_current_player(self) -> str:
+        """Get the mark of current player"""
         return self.players[self.player_index]
+
+    def get_other_player(self) -> str:
+        """Get the mark of the player other than the current player"""
+        return self.players[self.get_other_player_index()]
 
     def get_other_player_index(self) -> int:
         return int(not self.player_index)
 
     def switch_player(self):
+        """Change current player index to the other player"""
         self.player_index = self.get_other_player_index()
 
     def fix_attributes(self):
-        """ Manually fix/assign attributes of the class by checking the board state
-            Must be run when working with custom setup """
+        """Manually fix/assign attributes of the class by checking the board state
+            Must be run when working with custom setup"""
 
         self.grid.update_has_moved()
 
@@ -134,6 +106,7 @@ class Board:
             self.player_index = 1
 
     def ai_play(self):
+        """Use the minmax AI function to get the best move and play it"""
         minmax_board = copy.deepcopy(self)
         move = minmax(minmax_board)  # Get best move
         if move:
@@ -144,16 +117,29 @@ class Board:
 
 def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = False):
     """ Minmax AI for Tic Tac Toe
-        maximizing: Maximizing or the Minimizing player in minmax algorithm
-        evaluating: When evaluating is True, returns the best evaluation of player
-                    When evaluating is False, returns the best move on the board """
+
+    It uses the MinMax Algorithm to either get the best move
+    or the current evaluation of the position with best play by both sides
+
+    Parameters
+    ----------
+        minmax_board : Board
+            A copy of the original board
+        maximizing : bool
+            Maximizing or the Minimizing player in minmax algorithm
+        evaluating : bool
+            When evaluating is True, returns the evaluation of the position
+            When evaluating is False, returns the best move on the board """
+
     min_eval = inf
     max_eval = -inf
     best_move: tuple[int, int] | None = None
 
-    if minmax_board.check_win():
+    if minmax_board.state.check_win(minmax_board.get_other_player()):
+        # If current player is the maximizing player then it means the other player played the winning move
+        # Hence it returns -1 as eval, and vice versa
         return -1 if maximizing else 1
-    if minmax_board.check_draw():
+    if minmax_board.state.check_draw():
         return 0
 
     for move in minmax_board.grid.get_legal_moves():
@@ -162,6 +148,9 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
             if evaluation > max_eval:
                 max_eval = evaluation
                 best_move = move
+
+            # If the best move is found for maximizing player then return
+            # No need to check for other moves as any other move cannot be better than eval of +1
             if max_eval == 1:
                 return max_eval if evaluating else best_move
 
@@ -178,6 +167,15 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
 
 
 def evaluate(board: Board, move: tuple[int, int], maximizing: bool):
+    """Evaluates the move and returns the evaluation
+    Parameters
+    ----------
+        board : Board
+            board object to make a move on, must be a copy to prevent changing data of the actual board
+        move : tuple[int, int]
+            coordinates (row, column) of the move to evaluate
+        maximizing : bool
+            boolean to tell to evaluate from the maximizing size or the minimizing side"""
     board.play_move(move[0], move[1])
     evaluation = minmax(board, maximizing=maximizing, evaluating=True)
     board.play_move(move[0], move[1], unplay=True)
@@ -186,6 +184,12 @@ def evaluate(board: Board, move: tuple[int, int], maximizing: bool):
 
 ################## CUSTOM SETUP #########################
 def evaluate_position(board: Board):
+    """Evaluates each legal move and prints it with the grid telling eval of each move
+
+    Parameters
+    ----------
+    board : Board
+        board to evaluate"""
     str_evaluations: list[str] = []
     legal_moves = board.grid.get_legal_moves()
 

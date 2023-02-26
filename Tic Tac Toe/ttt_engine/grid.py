@@ -1,5 +1,5 @@
 """
-File containing class for managing grid system in Tic Tac Toe
+Modules containing class for managing grid system in Tic Tac Toe
 Contains class Grid
 
 Each horizontal straight line is a row

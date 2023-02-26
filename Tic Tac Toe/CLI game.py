@@ -49,11 +49,11 @@ def console_game():
     game_board.grid.print_grid()
 
     while True:
-        if game_board.check_win():
+        if game_board.state.check_win(game_board.get_other_player()):
             print(game_board.win_data.winner, "WON")
             break
 
-        elif game_board.check_draw():
+        elif game_board.state.check_draw():
             print("DRAW")
             break
 

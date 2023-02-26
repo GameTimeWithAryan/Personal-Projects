@@ -170,10 +170,10 @@ if GAME_MODE == 1:
 
 while True:
     if not game_over:
-        if game_board.check_win():
+        if game_board.state.check_win(game_board.get_other_player()):
             title = f"Winner: {game_board.win_data.winner}"
             game_over = True
-        elif game_board.check_draw():
+        elif game_board.state.check_draw():
             title = "Draw"
             game_over = True
         else:
