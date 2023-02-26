@@ -49,6 +49,11 @@ def console_game():
     game_board.grid.print_grid()
 
     while True:
+
+        if AI_MODE == 1 and AI_PLAYER == 0:
+            game_board.ai_play()
+            game_board.grid.print_grid()
+
         if game_board.state.check_win(game_board.get_other_player()):
             print(game_board.win_data.winner, "WON")
             break
@@ -56,10 +61,6 @@ def console_game():
         elif game_board.state.check_draw():
             print("DRAW")
             break
-
-        if AI_MODE == 1 and AI_PLAYER == 0:
-            game_board.ai_play()
-            game_board.grid.print_grid()
 
         move = get_move()
         play_move(move)
