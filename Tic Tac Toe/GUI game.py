@@ -1,6 +1,5 @@
 """
 This file does not follow SOLID principles or any good coding techniques
-Method for drawing the win line is a broken
 """
 
 import pygame
@@ -8,7 +7,7 @@ from ttt_engine import Board, WinType
 
 # Game variables
 BOARD_SIZE = 3
-GAME_MODE = 1  # 0 for Single Player, 1 for AI
+GAME_MODE = 0  # 0 for Single Player, 1 for AI
 AI_PLAYER = 1  # player index, [0, 1]
 
 
@@ -108,10 +107,12 @@ def draw_win_line():
     win_start_row, win_start_column = increment_1(game_board.win_data.win_line[0])
     win_end_row, win_end_column = increment_1(game_board.win_data.win_line[2])
 
-    line_start_x = board_x_pos + win_start_row * board_size / 3 - board_size / 6  # Lift all four values more
-    line_start_y = board_y_pos + win_start_column * board_size / 3 - board_size / 6
-    line_end_x = board_x_pos + win_end_row * board_size / 3 - board_size / 6
-    line_end_y = board_y_pos + win_end_column * board_size / 3 - board_size / 6
+    # Lift all four values more
+    line_start_x = board_x_pos + win_start_column * board_size / 3 - board_size / 6
+    line_end_x = board_x_pos + win_end_column * board_size / 3 - board_size / 6
+
+    line_start_y = board_y_pos + win_start_row * board_size / 3 - board_size / 6
+    line_end_y = board_y_pos + win_end_row * board_size / 3 - board_size / 6
 
     line_color = get_mark_color()
 
@@ -125,11 +126,12 @@ def draw_win_line():
         if game_board.win_data.win_line == [(i, i) for i in range(game_board.grid.size)]:
             x_adjustment = y_adjustment = adjustment
         else:
-            x_adjustment = -adjustment
-            y_adjustment = adjustment
+            x_adjustment = adjustment
+            y_adjustment = -adjustment
 
     line_start_x -= x_adjustment
     line_end_x += x_adjustment
+
     line_start_y -= y_adjustment
     line_end_y += y_adjustment
 
@@ -187,7 +189,8 @@ while True:
 
         if event.type == pygame.MOUSEBUTTONUP and not game_over and mouse_on_board(mouse_pos := pygame.mouse.get_pos()):
             row, column = get_row_column_from_mouse(mouse_pos)
-            game_board.play_move(row, column)
+            if game_board.grid.is_empty(row, column):
+                game_board.play_move(row, column)
 
         if event.type == ai_trigger_event:
             if game_board.player_index == AI_PLAYER and not game_over:
