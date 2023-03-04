@@ -5,17 +5,17 @@ Contains Board class to control the board and play the game
 Usage
 -----
 Defining a board:
-`game_board = Board()`
+game_board = Board(3)
 
 Board setup for custom use:
-`custom_board = Board()
+custom_board = Board(3)
 custom_board.grid.grid = [[custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL],
                          [custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL],
                          [custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL]]
-custom_board.fix_attributes()`
+custom_board.fix_attributes()
 
 Here custom_board.EMPTY_CELL can be swapped for any mark from the custom_board.players list
-Then fix_attributes method is run to select which player's turn it is and update Grid.has_moved attribute
+Then fix_attributes method is run to select which player's turn it is and update custom_board.grid.has_moved attribute
 """
 
 import copy
@@ -57,13 +57,14 @@ class Board:
 
     def play_move(self, row: int, column: int, unplay: bool = False):
         """Plays a move on the grid and updates current player
+        Uses zero-indexing
 
         Parameters
         ----------
             row : int
-                Row number on which to play the move
+                Zero indexed row number on which to play the move
             column : int
-                Column number on which to play the move
+                Zero indexed column number on which to play the move
             unplay : bool
                 If True, play_move marks an Empty cell on the given coordinate i.e. unplays the move
                 If False, marks the player whose turn it was on the given coordinate"""
