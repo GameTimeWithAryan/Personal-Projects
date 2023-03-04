@@ -35,21 +35,10 @@ game_board.grid.print_grid()
 #### Output:
 
 ```python
-  1
-2
-3
-1
-_
-_
-_
-2
-_
-_
-X
-3
-_
-_
-_
+  1 2 3
+1 _ _ _
+2 _ _ X
+3 _ _ _
 ```
 
 ### Documentation
