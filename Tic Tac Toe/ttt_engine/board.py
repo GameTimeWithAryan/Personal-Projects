@@ -22,13 +22,16 @@ import copy
 from math import inf
 from colorama import Fore
 
-from .grid import Grid
+from .grid import Grid, Coordinate
 from .win_data import WinData
 from .state_checker import StateChecker
 
 
 class Board:
     """Board class for managing the game
+
+    Contains methods for playing a complete tic tac toe game whilst automatically managing
+    player turns and having extra data like `has_moved attribute` of grid class if required
 
     Attributes
     ----------
@@ -43,9 +46,6 @@ class Board:
             Instance of WinData class for maintain data about which player won the game and how
         state : StateChecker
             Instance of StateChecker to check wins or draws and update win_data accordingly
-
-    Methods
-    -------
     """
 
     def __init__(self, size: int = 3):
@@ -71,6 +71,7 @@ class Board:
             unplay : bool
                 If True, play_move marks an Empty cell on the given coordinate i.e. unplays the move
                 If False, marks the player whose turn it was on the given coordinate"""
+
         mark = self.get_current_player()
         if unplay:
             mark = self.grid.EMPTY_CELL
@@ -133,7 +134,7 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
 
     min_eval = inf
     max_eval = -inf
-    best_move: tuple[int, int] | None = None
+    best_move: Coordinate | None = None
 
     if minmax_board.state.check_win(minmax_board.get_other_player()):
         # If current player is the maximizing player then it means the other player played the winning move
@@ -166,16 +167,17 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
     return best_move
 
 
-def evaluate(board: Board, move: tuple[int, int], maximizing: bool):
+def evaluate(board: Board, move: Coordinate, maximizing: bool):
     """Evaluates the move and returns the evaluation
     Parameters
     ----------
         board : Board
             board object to make a move on, must be a copy to prevent changing data of the actual board
-        move : tuple[int, int]
+        move : Coordinate
             coordinates (row, column) of the move to evaluate
         maximizing : bool
             boolean to tell to evaluate from the maximizing size or the minimizing side"""
+
     board.play_move(move[0], move[1])
     evaluation = minmax(board, maximizing=maximizing, evaluating=True)
     board.play_move(move[0], move[1], unplay=True)
@@ -190,6 +192,7 @@ def evaluate_position(board: Board):
     ----------
     board : Board
         board to evaluate"""
+
     str_evaluations: list[str] = []
     legal_moves = board.grid.get_legal_moves()
 

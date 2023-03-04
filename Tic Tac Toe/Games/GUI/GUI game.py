@@ -3,6 +3,9 @@ This file does not follow SOLID principles or any good coding techniques
 """
 
 import pygame
+import sys
+
+sys.path.append("../..")
 from ttt_engine import Board, WinType
 
 # Game variables
@@ -11,8 +14,8 @@ GAME_MODE = 0  # 0 for Single Player, 1 for AI
 AI_PLAYER = 1  # player index, [0, 1]
 
 
-class ResetButton:
-    def __init__(self, text: str, size, position):
+class ClickableButton:
+    def __init__(self, text: str, size: tuple[float, float], position: tuple[float, float]):
         self.pressed = False
 
         self.top_color = "#3b3b3b"
@@ -58,6 +61,9 @@ def mouse_on_board(mouse_position):
 
 def get_row_column_from_mouse(mouse_position):
     # Run only if `mouse_on_board(mouse_position)` is True
+    if not mouse_on_board(mouse_position):
+        return None, None
+
     mouse_x, mouse_y = mouse_position
     row_num = (mouse_y - board_y_pos) // 130
     column_num = (mouse_x - board_x_pos) // 130
@@ -165,7 +171,7 @@ title_bg_rect = pygame.Rect(0, 0, 200, 75)
 title_bg_rect.center = (WIDTH / 2, (HEIGHT - board_size) / 4)
 
 # Reset button
-reset_button = ResetButton("Reset", (200, 55), (WIDTH / 2, (HEIGHT - (HEIGHT - board_size) / 4)))
+reset_button = ClickableButton("Reset", (200, 55), (WIDTH / 2, (HEIGHT - (HEIGHT - board_size) / 4)))
 ai_trigger_event = pygame.USEREVENT + 1
 if GAME_MODE == 1:
     pygame.time.set_timer(ai_trigger_event, 100)
@@ -189,7 +195,7 @@ while True:
 
         if event.type == pygame.MOUSEBUTTONUP and not game_over and mouse_on_board(mouse_pos := pygame.mouse.get_pos()):
             row, column = get_row_column_from_mouse(mouse_pos)
-            if game_board.grid.is_empty(row, column):
+            if row != -1 and game_board.grid.is_empty(row, column):
                 game_board.play_move(row, column)
 
         if event.type == ai_trigger_event:
