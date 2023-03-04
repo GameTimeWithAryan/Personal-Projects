@@ -1,6 +1,8 @@
 from enum import StrEnum, auto
 from dataclasses import dataclass, field
 
+from .grid import Coordinate
+
 
 class WinType(StrEnum):
     """Enum for all possible ways to Win in Tic Tac Toe game"""
@@ -21,9 +23,10 @@ class WinData:
     win_type : WinType | None
         stores if player won by horizontal, vertical or diagonal line connection
         should be None or an enum member of WinType enum
-    win_line : list[tuple[int, int]]
+    win_line : list[Coordinate]
         list of coordinates of points which caused the player to win
     """
+
     winner: str | None = None
     win_type: WinType | None = None
-    win_line: list[tuple[int, int]] = field(default_factory=list)
+    win_line: list[Coordinate] = field(default_factory=list)

@@ -4,7 +4,6 @@ from .grid import Grid
 
 class StateChecker:
     """Class for checking for win or draw using the grid and updating win_data accordingly
-    This class checks for win or draw and also updates the win_data
 
     Attributes
     ----------
@@ -12,7 +11,7 @@ class StateChecker:
             grid which is used to check the state of the board when methods of StateChecker are called
             to check for win or draw on the board
         win_data : WinData
-            passed for updating the win_data of the board whenever a win occurs
+            contains win data of the game to manage and update it
 
     Methods
     -------
@@ -24,23 +23,30 @@ class StateChecker:
     IMPORTANT
     ---------
     check_win must be called before check_draw while checking the state of the game
-    else a situation can occur when the board is full and it a victory for a player but check_draw gives True
+    because check_draw just checks if there is no EMPTY_CELL on the grid, and if that happens then it returns True
+    but a situation can occur when the board is full and it a victory for a player but check_draw is run before running
+    check_win which caused the developer to declare the game a draw even if there was a win on the board
     """
 
-    def __init__(self, grid: Grid, win_data: WinData):
+    def __init__(self, grid: Grid):
         self.grid = grid
-        self.win_data = win_data
+        self.win_data = WinData()
 
     def check_draw(self) -> bool:
         """Checks for draw on the board
-        Returns True if all the cells are marked in the grid
+
+        Returns True if there is no EMPTY_CELL on the board
 
         IMPORTANT
         ---------
-        check_draw will return True if the grid is full even when a player has won on the last move
-        because it will not check if a player has already won or not"""
+        It does not check if any player has won or not, just checks if all cells are marked
+        Which causes it to return True even if a player has won but the board is full, so it must be called after
+        calling check_win
+        It is done this way to avoid calling check_win redundantly which will reduce the efficiency of the program
+        as check_win also is a costly function"""
+
         for row in self.grid.grid:
-            if Grid.EMPTY_CELL in row:
+            if self.grid.EMPTY_CELL in row:
                 return False
         return True
 
@@ -55,6 +61,7 @@ class StateChecker:
                 mark of the player other than whose turn it is to move
                 i.e. the player who played the last move
         """
+
         if self.check_horizontal() or self.check_vertical() or self.check_diagonal():
             self.win_data.winner = other_player
             return True

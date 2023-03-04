@@ -22,13 +22,15 @@ import copy
 from math import inf
 from colorama import Fore
 
-from .grid import Grid
-from .win_data import WinData
+from .grid import Grid, Coordinate
 from .state_checker import StateChecker
 
 
 class Board:
     """Board class for managing the game
+
+    Contains methods for playing a complete tic tac toe game whilst automatically managing
+    player turns and having extra data like `has_moved attribute` of grid class if required
 
     Attributes
     ----------
@@ -39,13 +41,8 @@ class Board:
             When a move is played, the board will be updated using these marks
         grid : Grid
             Instance of Grid class for managing the grid
-        win_data : WinData
-            Instance of WinData class for maintain data about which player won the game and how
         state : StateChecker
             Instance of StateChecker to check wins or draws and update win_data accordingly
-
-    Methods
-    -------
     """
 
     def __init__(self, size: int = 3):
@@ -53,8 +50,7 @@ class Board:
         self.players: list[str] = ["X", "O"]
 
         self.grid: Grid = Grid(size)
-        self.win_data: WinData = WinData()
-        self.state: StateChecker = StateChecker(self.grid, self.win_data)
+        self.state: StateChecker = StateChecker(self.grid)
 
     def reset(self):
         self.__init__(self.grid.size)
@@ -71,6 +67,7 @@ class Board:
             unplay : bool
                 If True, play_move marks an Empty cell on the given coordinate i.e. unplays the move
                 If False, marks the player whose turn it was on the given coordinate"""
+
         mark = self.get_current_player()
         if unplay:
             mark = self.grid.EMPTY_CELL
@@ -107,9 +104,11 @@ class Board:
 
     def ai_play(self):
         """Use the minmax AI function to get the best move and play it"""
+        # Creating a copy of board to avoid the updating the win_data while trying to find best moves
+        # as minmax board requires to play many moves and check for win which would update win data of board
         minmax_board = copy.deepcopy(self)
-        move = minmax(minmax_board)  # Get best move
-        if move:
+        move = minmax(minmax_board, maximizing=True, evaluating=False)  # Get best move
+        if type(move) == tuple:
             self.play_move(move[0], move[1])
 
 
@@ -133,7 +132,7 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
 
     min_eval = inf
     max_eval = -inf
-    best_move: tuple[int, int] | None = None
+    best_move: Coordinate | None = None
 
     if minmax_board.state.check_win(minmax_board.get_other_player()):
         # If current player is the maximizing player then it means the other player played the winning move
@@ -166,16 +165,17 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
     return best_move
 
 
-def evaluate(board: Board, move: tuple[int, int], maximizing: bool):
+def evaluate(board: Board, move: Coordinate, maximizing: bool):
     """Evaluates the move and returns the evaluation
     Parameters
     ----------
         board : Board
             board object to make a move on, must be a copy to prevent changing data of the actual board
-        move : tuple[int, int]
+        move : Coordinate
             coordinates (row, column) of the move to evaluate
         maximizing : bool
             boolean to tell to evaluate from the maximizing size or the minimizing side"""
+
     board.play_move(move[0], move[1])
     evaluation = minmax(board, maximizing=maximizing, evaluating=True)
     board.play_move(move[0], move[1], unplay=True)
@@ -190,6 +190,7 @@ def evaluate_position(board: Board):
     ----------
     board : Board
         board to evaluate"""
+
     str_evaluations: list[str] = []
     legal_moves = board.grid.get_legal_moves()
 

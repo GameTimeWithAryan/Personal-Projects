@@ -96,7 +96,7 @@ def draw_marks():
 
 def draw_win_line():
     # Draw line connecting winning marks
-    if not game_board.win_data.win_line:
+    if not game_board.state.win_data.win_line:
         return
 
     adjustment = 45
@@ -104,8 +104,8 @@ def draw_win_line():
     y_adjustment = 0
 
     increment_1 = lambda x: (x[0] + 1, x[1] + 1)
-    win_start_row, win_start_column = increment_1(game_board.win_data.win_line[0])
-    win_end_row, win_end_column = increment_1(game_board.win_data.win_line[2])
+    win_start_row, win_start_column = increment_1(game_board.state.win_data.win_line[0])
+    win_end_row, win_end_column = increment_1(game_board.state.win_data.win_line[2])
 
     # Lift all four values more
     line_start_x = board_x_pos + win_start_column * board_size / 3 - board_size / 6
@@ -116,14 +116,14 @@ def draw_win_line():
 
     line_color = get_mark_color()
 
-    if game_board.win_data.win_type == WinType.HORIZONTAL:
+    if game_board.state.win_data.win_type == WinType.HORIZONTAL:
         x_adjustment = adjustment
 
-    if game_board.win_data.win_type == WinType.VERTICAL:
+    if game_board.state.win_data.win_type == WinType.VERTICAL:
         y_adjustment = adjustment
 
-    if game_board.win_data.win_type == WinType.DIAGONAL:
-        if game_board.win_data.win_line == [(i, i) for i in range(game_board.grid.size)]:
+    if game_board.state.win_data.win_type == WinType.DIAGONAL:
+        if game_board.state.win_data.win_line == [(i, i) for i in range(game_board.grid.size)]:
             x_adjustment = y_adjustment = adjustment
         else:
             x_adjustment = adjustment
@@ -173,7 +173,7 @@ if GAME_MODE == 1:
 while True:
     if not game_over:
         if game_board.state.check_win(game_board.get_other_player()):
-            title = f"Winner: {game_board.win_data.winner}"
+            title = f"Winner: {game_board.state.win_data.winner}"
             game_over = True
         elif game_board.state.check_draw():
             title = "Draw"
