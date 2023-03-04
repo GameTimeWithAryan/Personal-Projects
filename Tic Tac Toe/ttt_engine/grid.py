@@ -17,16 +17,10 @@ An empty grid is a list of list, having rows as a list of 3 cells and 3 rows in 
   [ Board.EMPTY_CELL , Board.EMPTY_CELL , Board.EMPTY_CELL ] ]
 """
 
-# Coordinate defining the position of cell on the board
-Coordinate = tuple[int, int]
-
 
 class Grid:
     """
     Class for managing the grid of tic-tac-toe
-
-    Contains methods to control the board of tic tac toe, by updating cells
-    and other helper functions like is_empty and get_cell
 
         Attributes
         ----------
@@ -81,7 +75,7 @@ class Grid:
         """Updates the value of the cell at (row, column) with new mark"""
         self.grid[row][column] = mark
 
-    def get_legal_moves(self) -> list[Coordinate]:
+    def get_legal_moves(self) -> list[tuple[int, int]]:
         """Returns a list of coordinates (row, column) of all Empty Cells
 
             Example

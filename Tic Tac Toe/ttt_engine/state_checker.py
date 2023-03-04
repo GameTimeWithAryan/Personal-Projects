@@ -25,7 +25,6 @@ class StateChecker:
     ---------
     check_win must be called before check_draw while checking the state of the game
     else a situation can occur when the board is full and it a victory for a player but check_draw gives True
-    if check_draw if called before check_win and the user might assume as the board if full the game must be draw
     """
 
     def __init__(self, grid: Grid, win_data: WinData):

@@ -1,13 +1,9 @@
-import sys
-
-sys.path.append('..')
 from ttt_engine import Board
-from ttt_engine.grid import Coordinate
 
 game_board = Board(3)
 
 
-def get_move() -> str | Coordinate:
+def get_move() -> str | tuple[int, int]:
     while True:
         move = input("Enter move - ")
         if move == "ai":
@@ -27,7 +23,7 @@ def get_move() -> str | Coordinate:
     return move
 
 
-def play_move(move: str | Coordinate):
+def play_move(move: str | tuple[int, int]):
     if move == "ai":
         game_board.ai_play()
         return
