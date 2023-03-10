@@ -14,7 +14,7 @@ The package is currently not installable
 
 The repository can be cloned and the games can be played out of the box. For using the package, it needs to be used
 directly by placing it in the directory to be used.
-A file named `usage.py` placed in the same directory as the `ttt_engine` can use the package as shown -
+A file named `usage.py` placed in the same directory as the `ttt_engine` package can use the package as shown -
 
 Creating a board object which can be used to play the game with its methods of size 3 i.e. a 3 X 3 grid
 

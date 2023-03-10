@@ -25,13 +25,13 @@ class WinData:
 
     Attributes
     ----------
-    winner : str
-        mark of player who won, "X" or "O" or other marks can be possible values to be stored in this attribute
-    win_type : WinType | None
-        stores if player won by horizontal, vertical or diagonal line connection
-        should be None or an enum member of WinType enum
-    win_line : list[Coordinate]
-        list of coordinates of points which caused the player to win
+        winner : str
+            mark of player who won, "X" or "O" or other marks can be possible values to be stored in this attribute
+        win_type : WinType | None
+            stores if player won by horizontal, vertical or diagonal line connection
+            should be None or an enum member of WinType enum
+        win_line : list[Coordinate]
+            list of coordinates of points which caused the player to win
     """
 
     winner: str | None = None

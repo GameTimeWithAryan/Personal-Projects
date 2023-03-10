@@ -15,7 +15,7 @@ custom_board.grid.grid = [[custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY
 custom_board.fix_attributes()
 
 Here custom_board.EMPTY_CELL can be swapped for any mark from the custom_board.players list
-Then fix_attributes method is run to select which player's turn it is and update custom_board.grid.has_moved attribute
+Then fix_attributes method is run to select which player's turn it is
 """
 
 import copy
@@ -30,7 +30,7 @@ class Board:
     """Board class for managing the game
 
     Contains methods for playing a complete tic tac toe game whilst automatically managing
-    player turns and having extra data like `has_moved attribute` of grid class if required
+    player turns
 
     Attributes
     ----------
@@ -61,10 +61,8 @@ class Board:
 
         Parameters
         ----------
-            row : int
-                Zero indexed row number on which to play the move
-            column : int
-                Zero indexed column number on which to play the move
+            row, column : int
+                Zero indexed row/column number on which to play the move
             unplay : bool
                 If True, play_move marks an Empty cell on the given coordinate i.e. unplays the move
                 If False, marks the player whose turn it was on the given coordinate"""
@@ -74,7 +72,6 @@ class Board:
             mark = self.grid.EMPTY_CELL
 
         self.grid.update_cell(row, column, mark)
-        self.grid.update_has_moved()
         self.switch_player()
 
     def get_current_player(self) -> str:
@@ -95,8 +92,6 @@ class Board:
     def fix_attributes(self):
         """Manually fix/assign attributes of the class by checking the board state
             Must be run when working with custom setup"""
-
-        self.grid.update_has_moved()
 
         if len(self.grid.get_legal_moves()) % 2 == 1:
             self.player_index = 0

@@ -42,15 +42,15 @@ class StateChecker:
 
         Parameters
         ----------
-        other_player : str
-            Mark of the player other than whose turn it is to move
-            board.get_other_player() returns the expected parameter
-            where board is an instance of Board class
+            other_player : str
+                Mark of the player other than whose turn it is to move
+                board.get_other_player() returns the expected parameter
+                where board is an instance of Board class
 
         Returns
         -------
-        GameState
-            Enum type telling if the game is won, drawn, or is ongoing
+            GameState
+                Enum type telling if the game is won, drawn, or is ongoing
 
         """
         if self.check_win(other_player):

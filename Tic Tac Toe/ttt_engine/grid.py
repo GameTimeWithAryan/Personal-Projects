@@ -36,10 +36,6 @@ class Grid:
                 value of empty cell to be used while creating the grid and checking empty cells
             size : str
                 size used to generate the grid, dimensions of grid will be size * size
-            has_moved : bool
-                Tells if any player has played a move
-                Needs to be updated manually everytime board state changes by calling update_has_moved()
-                Can be used for GUI games for rendering reset buttons only when a player has moved
             grid : list[list[str]]
                 the grid for storing cells and making moves
 
@@ -55,8 +51,6 @@ class Grid:
                 gets all legal moves on the board
             print_grid()
                 prints the grid
-            update_has_moved()
-                updates has_moved attribute
             is_line_winning(line)
                 checks if a line (list) contains marks of the same player
     """
@@ -66,7 +60,6 @@ class Grid:
     def __init__(self, size: int):
         """Generates a new grid of size, size * size"""
         self.size: int = size
-        self.has_moved: bool = False
 
         # Generates a grid list
         self.grid: list[list[str]] = [[Grid.EMPTY_CELL for _ in range(size)] for _ in range(size)]
@@ -80,7 +73,7 @@ class Grid:
         return self.grid[row][column]
 
     def update_cell(self, row: int, column: int, mark: str):
-        """Updates the value of the cell at (row, column) with new mark"""
+        """Updates the value of the cell at zero indexed Coordinate (row, column) with new mark"""
         self.grid[row][column] = mark
 
     def get_legal_moves(self) -> list[Coordinate]:
@@ -115,16 +108,6 @@ class Grid:
         for index, row in enumerate(self.grid):
             print(f'{index + 1} {" ".join(row)}')
         print()
-
-    def update_has_moved(self):
-        """Checks number of moves made on board to update has_moved
-
-        NOTE
-        ----
-        Needs to be called everytime board state changes to update has_moved attribute"""
-
-        legal_moves = self.get_legal_moves()
-        self.has_moved = len(legal_moves) != self.size ** 2
 
     @staticmethod
     def is_line_winning(line: list[str]) -> bool:

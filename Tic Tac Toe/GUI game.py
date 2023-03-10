@@ -28,6 +28,7 @@ class ResetButton:
 
     def handle_mouse(self):
         global game_over
+        global has_moved
         mouse_position = pygame.mouse.get_pos()
         if self.top_rect.collidepoint(mouse_position):
             self.top_color = "#030303"
@@ -38,6 +39,7 @@ class ResetButton:
                 if self.pressed:
                     game_board.reset()
                     game_over = False
+                    has_moved = False
                     self.pressed = False
         else:
             self.top_color = "#3b3b3b"
@@ -149,6 +151,7 @@ text_font = pygame.font.Font(None, 50)
 game_board = Board(BOARD_SIZE)
 
 game_over = False
+has_moved = False
 primary_color = "#14bdac"
 accent_color = "white"
 secondary_color = "#3b3b3b"
@@ -191,6 +194,7 @@ while True:
             row, column = get_row_column_from_mouse(mouse_pos)
             if game_board.grid.is_empty(row, column):
                 game_board.play_move(row, column)
+                has_moved = True
 
         if event.type == ai_trigger_event:
             if game_board.player_index == AI_PLAYER and not game_over:
@@ -204,7 +208,7 @@ while True:
     draw_win_line()
 
     # Reset Button
-    if game_board.grid.has_moved:
+    if has_moved:
         reset_button.update()
 
     # Title
