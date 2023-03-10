@@ -4,6 +4,13 @@ from dataclasses import dataclass, field
 from .grid import Coordinate
 
 
+class GameState(StrEnum):
+    """Enum for all game states"""
+    WIN = auto()
+    DRAW = auto()
+    ONGOING = auto()
+
+
 class WinType(StrEnum):
     """Enum for all possible ways to Win in Tic Tac Toe game"""
     HORIZONTAL = auto()
