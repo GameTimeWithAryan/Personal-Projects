@@ -7,42 +7,45 @@ from ttt_engine import Board, WinType
 
 # Game variables
 BOARD_SIZE = 3
-GAME_MODE = 0  # 0 for Single Player, 1 for AI
+GAME_MODE = 1  # 0 for Single Player, 1 for AI
 AI_PLAYER = 1  # player index, [0, 1]
 
 
 class ResetButton:
-    def __init__(self, text: str, size, position):
-        self.pressed = False
+    def __init__(self, text: str, size: tuple[int, int], position: tuple[float, float], colors: tuple[str, str]):
+        self.is_pressed = False
 
-        self.top_color = "#3b3b3b"
-        self.top_rect = pygame.Rect((0, 0), size)
-        self.top_rect.center = position
+        self.primary_color = colors[0]
+        self.hover_color = colors[1]
+        self.color = self.primary_color
+
+        self.rect = pygame.Rect((0, 0), size)
+        self.rect.center = position
 
         self.text_surf = text_font.render(text, True, "white")
-        self.text_rect = self.text_surf.get_rect(center=self.top_rect.center)
+        self.text_rect = self.text_surf.get_rect(center=self.rect.center)
 
     def draw(self):
-        pygame.draw.rect(screen, self.top_color, self.top_rect, border_radius=12)
+        pygame.draw.rect(screen, self.color, self.rect, border_radius=12)
         screen.blit(self.text_surf, self.text_rect)
 
     def handle_mouse(self):
         global game_over
         global has_moved
         mouse_position = pygame.mouse.get_pos()
-        if self.top_rect.collidepoint(mouse_position):
-            self.top_color = "#030303"
+        if self.rect.collidepoint(mouse_position):
+            self.color = self.hover_color
 
             if pygame.mouse.get_pressed()[0]:
-                self.pressed = True
+                self.is_pressed = True
             else:
-                if self.pressed:
+                if self.is_pressed:
                     game_board.reset()
                     game_over = False
                     has_moved = False
-                    self.pressed = False
+                    self.is_pressed = False
         else:
-            self.top_color = "#3b3b3b"
+            self.color = self.primary_color
 
     def update(self):
         self.draw()
@@ -53,13 +56,14 @@ def get_mark_color():
     return "#FF615F" if game_board.get_current_player() == game_board.players[1] else "#3EC5F3"
 
 
-def mouse_on_board(mouse_position):
+def mouse_on_board(mouse_position: tuple[int, int]):
     return board_x_pos < mouse_position[0] < board_x_pos + board_size \
         and board_y_pos < mouse_position[1] < board_y_pos + board_size
 
 
-def get_row_column_from_mouse(mouse_position):
-    # Run only if `mouse_on_board(mouse_position)` is True
+def get_row_column_from_mouse(mouse_position: tuple[int, int]):
+    if not mouse_on_board(mouse_position):
+        return None, None
     mouse_x, mouse_y = mouse_position
     row_num = (mouse_y - board_y_pos) // (board_size // 3)
     column_num = (mouse_x - board_x_pos) // (board_size // 3)
@@ -69,6 +73,7 @@ def get_row_column_from_mouse(mouse_position):
 def draw_grid():
     # Draw Board Lines
     for i in range(1, 3):
+
         # Vertical Lines
         line_x_pos = board_x_pos + i * board_size / 3  # x position will be changing when drawing vertically
         pygame.draw.line(screen, secondary_color, (line_x_pos, board_y_pos), (line_x_pos, board_y_pos + board_size), 6)
@@ -105,11 +110,10 @@ def draw_win_line():
     x_adjustment = 0
     y_adjustment = 0
 
-    increment_1 = lambda x: (x[0] + 1, x[1] + 1)
-    win_start_row, win_start_column = increment_1(game_board.state.win_data.win_line[0])
-    win_end_row, win_end_column = increment_1(game_board.state.win_data.win_line[2])
+    make_one_indexed = lambda x: (x[0] + 1, x[1] + 1)
+    win_start_row, win_start_column = make_one_indexed(game_board.state.win_data.win_line[0])
+    win_end_row, win_end_column = make_one_indexed(game_board.state.win_data.win_line[2])
 
-    # Lift all four values more
     line_start_x = board_x_pos + win_start_column * board_size / 3 - board_size / 6
     line_end_x = board_x_pos + win_end_column * board_size / 3 - board_size / 6
 
@@ -120,11 +124,9 @@ def draw_win_line():
 
     if game_board.state.win_data.win_type == WinType.HORIZONTAL:
         x_adjustment = adjustment
-
-    if game_board.state.win_data.win_type == WinType.VERTICAL:
+    elif game_board.state.win_data.win_type == WinType.VERTICAL:
         y_adjustment = adjustment
-
-    if game_board.state.win_data.win_type == WinType.DIAGONAL:
+    elif game_board.state.win_data.win_type == WinType.DIAGONAL:
         if game_board.state.win_data.win_line == [(i, i) for i in range(game_board.grid.size)]:
             x_adjustment = y_adjustment = adjustment
         else:
@@ -158,23 +160,29 @@ secondary_color = "#3b3b3b"
 title = ""
 
 # Making Board
-board_size = 00
+board_size = 390
 board_x_pos = (WIDTH - board_size) // 2
 board_y_pos = (HEIGHT - board_size) // 2
 board_rect = pygame.Rect(board_x_pos, board_y_pos, board_size, board_size)
 
 # Title
-title_bg_rect = pygame.Rect(0, 0, 200, 75)
+title_bg_rect = pygame.Rect((0, 0), (200, 75))
 title_bg_rect.center = (WIDTH / 2, (HEIGHT - board_size) / 4)
 
 # Reset button
-reset_button = ResetButton("Reset", (200, 55), (WIDTH / 2, (HEIGHT - (HEIGHT - board_size) / 4)))
+reset_button = ResetButton("Reset", (200, 55),
+                           (WIDTH / 2, (HEIGHT - (HEIGHT - board_size) / 4)),
+                           ("#3b3b3b", "#030303"))
+
+# AI Event
 ai_trigger_event = pygame.USEREVENT + 1
 if GAME_MODE == 1:
     pygame.time.set_timer(ai_trigger_event, 100)
 
 while True:
     if not game_over:
+
+        # Updating Title
         if game_board.state.check_win(game_board.get_other_player()):
             title = f"Winner: {game_board.state.win_data.winner}"
             game_over = True
@@ -190,15 +198,21 @@ while True:
             pygame.quit()
             quit()
 
-        if event.type == pygame.MOUSEBUTTONUP and not game_over and mouse_on_board(mouse_pos := pygame.mouse.get_pos()):
+        # Check if player clicked
+        if event.type == pygame.MOUSEBUTTONUP and not game_over:
+            mouse_pos = pygame.mouse.get_pos()
             row, column = get_row_column_from_mouse(mouse_pos)
+            # row, column will be None, None if the mouse_click did not occur on the board
+            if row is None:
+                continue
+
+            # If clicked on board, play move
             if game_board.grid.is_empty(row, column):
                 game_board.play_move(row, column)
                 has_moved = True
 
-        if event.type == ai_trigger_event:
-            if game_board.player_index == AI_PLAYER and not game_over:
-                game_board.ai_play()
+        if event.type == ai_trigger_event and not game_over and game_board.player_index == AI_PLAYER:
+            game_board.ai_play()
 
     # Drawing everything
     screen.fill(primary_color)
@@ -213,9 +227,9 @@ while True:
 
     # Title
     pygame.draw.rect(screen, secondary_color, title_bg_rect)
-    title_surf = text_font.render(title, True, accent_color)
-    title_rect = title_surf.get_rect(center=title_bg_rect.center)
-    screen.blit(title_surf, title_rect)
+    title_text_surf = text_font.render(title, True, accent_color)
+    title_text_rect = title_text_surf.get_rect(center=title_bg_rect.center)
+    screen.blit(title_text_surf, title_text_rect)
 
     pygame.display.update()
     clock.tick(60)

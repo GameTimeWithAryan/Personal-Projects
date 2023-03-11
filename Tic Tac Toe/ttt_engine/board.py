@@ -104,10 +104,7 @@ class Board:
         # as minmax board requires to play many moves and check for win which would update win data of board
         minmax_board = copy.deepcopy(self)
         move = minmax(minmax_board, maximizing=True, evaluating=False)  # Get best move
-        if type(move) == tuple:
-            self.play_move(move[0], move[1])
-        else:
-            print("Cannot play move")
+        self.play_move(move[0], move[1])
 
 
 ################## CUSTOM SETUP #########################
