@@ -26,15 +26,19 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
     max_eval = -inf
     best_move: Coordinate | None = None
 
-    # BASE CASE
+    # BASE CASES
     if minmax_board.state.check_win(minmax_board.get_other_player()):
-        # If current player is the maximizing player then it means the other player played the winning move
-        # Hence it returns -1 as eval, and vice versa
-        return -1 if maximizing else 1
+        if evaluating:
+            # If current player is the maximizing player then it means the other player played the winning move
+            # Hence it returns -1 as eval, and vice versa
+            return -1 if maximizing else 1
+        else:
+            return None
 
     if minmax_board.state.check_draw():
-        return 0
+        return 0 if evaluating else None
 
+    # MINMAX ALGORITHM
     for move in minmax_board.grid.get_legal_moves():
         evaluation = evaluate(minmax_board, move, not maximizing)
         if maximizing:
@@ -71,6 +75,6 @@ def evaluate(board: Board, move: Coordinate, maximizing: bool):
             boolean to tell to evaluate from the maximizing size or the minimizing side"""
 
     board.play_move(move[0], move[1])
-    evaluation = minmax(board, maximizing=maximizing, evaluating=True)
+    evaluation = minmax(board, maximizing, evaluating=True)
     board.play_move(move[0], move[1], unplay=True)
     return evaluation

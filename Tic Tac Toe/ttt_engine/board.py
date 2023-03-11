@@ -106,6 +106,8 @@ class Board:
         move = minmax(minmax_board, maximizing=True, evaluating=False)  # Get best move
         if type(move) == tuple:
             self.play_move(move[0], move[1])
+        else:
+            print("Cannot play move")
 
 
 ################## CUSTOM SETUP #########################

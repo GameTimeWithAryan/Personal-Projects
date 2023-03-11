@@ -54,15 +54,15 @@ def get_mark_color():
 
 
 def mouse_on_board(mouse_position):
-    return board_x_pos < mouse_position[0] < board_x_pos + board_size and board_y_pos < mouse_position[
-        1] < board_y_pos + board_size
+    return board_x_pos < mouse_position[0] < board_x_pos + board_size \
+        and board_y_pos < mouse_position[1] < board_y_pos + board_size
 
 
 def get_row_column_from_mouse(mouse_position):
     # Run only if `mouse_on_board(mouse_position)` is True
     mouse_x, mouse_y = mouse_position
-    row_num = (mouse_y - board_y_pos) // 130
-    column_num = (mouse_x - board_x_pos) // 130
+    row_num = (mouse_y - board_y_pos) // (board_size // 3)
+    column_num = (mouse_x - board_x_pos) // (board_size // 3)
     return row_num, column_num
 
 
@@ -142,7 +142,7 @@ def draw_win_line():
 
 # Pygame Initialization
 pygame.init()
-WIDTH, HEIGHT = 800, 700
+WIDTH, HEIGHT = 800, 700  # 8:7 is recommended ratio for resolution
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Tic Tac Toe')
 clock = pygame.time.Clock()
@@ -158,7 +158,7 @@ secondary_color = "#3b3b3b"
 title = ""
 
 # Making Board
-board_size = 390
+board_size = 00
 board_x_pos = (WIDTH - board_size) // 2
 board_y_pos = (HEIGHT - board_size) // 2
 board_rect = pygame.Rect(board_x_pos, board_y_pos, board_size, board_size)
