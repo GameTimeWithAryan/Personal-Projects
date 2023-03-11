@@ -11,7 +11,7 @@ GAME_MODE = 1  # 0 for Single Player, 1 for AI
 AI_PLAYER = 1  # player index, [0, 1]
 
 
-class ResetButton:
+class Button:
     def __init__(self, text: str, size: tuple[int, int], position: tuple[float, float], colors: tuple[str, str]):
         self.is_pressed = False
 
@@ -170,9 +170,9 @@ title_bg_rect = pygame.Rect((0, 0), (200, 75))
 title_bg_rect.center = (WIDTH / 2, (HEIGHT - board_size) / 4)
 
 # Reset button
-reset_button = ResetButton("Reset", (200, 55),
-                           (WIDTH / 2, (HEIGHT - (HEIGHT - board_size) / 4)),
-                           ("#3b3b3b", "#030303"))
+reset_button = Button("Reset", (200, 55),
+                      (WIDTH / 2, (HEIGHT - (HEIGHT - board_size) / 4)),
+                      ("#3b3b3b", "#030303"))
 
 # AI Event
 ai_trigger_event = pygame.USEREVENT + 1
