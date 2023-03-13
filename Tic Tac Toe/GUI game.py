@@ -56,13 +56,13 @@ def get_mark_color():
     return "#FF615F" if game_board.get_current_player() == game_board.players[1] else "#3EC5F3"
 
 
-def mouse_on_board(mouse_position: tuple[int, int]):
+def is_mouse_on_board(mouse_position: tuple[int, int]):
     return board_x_pos < mouse_position[0] < board_x_pos + board_size \
         and board_y_pos < mouse_position[1] < board_y_pos + board_size
 
 
 def get_row_column_from_mouse(mouse_position: tuple[int, int]):
-    if not mouse_on_board(mouse_position):
+    if not is_mouse_on_board(mouse_position):
         return None, None
     mouse_x, mouse_y = mouse_position
     row_num = (mouse_y - board_y_pos) // (board_size // 3)
@@ -73,14 +73,13 @@ def get_row_column_from_mouse(mouse_position: tuple[int, int]):
 def draw_grid():
     # Draw Board Lines
     for i in range(1, 3):
-
         # Vertical Lines
         line_x_pos = board_x_pos + i * board_size / 3  # x position will be changing when drawing vertically
-        pygame.draw.line(screen, secondary_color, (line_x_pos, board_y_pos), (line_x_pos, board_y_pos + board_size), 6)
+        pygame.draw.line(screen, black_bg_color, (line_x_pos, board_y_pos), (line_x_pos, board_y_pos + board_size), 6)
 
         # Horizontal Lines
         line_y_pos = board_y_pos + i * board_size / 3  # y position will be changing when drawing horizontally
-        pygame.draw.line(screen, secondary_color, (board_x_pos, line_y_pos), (board_x_pos + board_size, line_y_pos), 6)
+        pygame.draw.line(screen, black_bg_color, (board_x_pos, line_y_pos), (board_x_pos + board_size, line_y_pos), 6)
 
 
 def draw_marks():
@@ -142,6 +141,19 @@ def draw_win_line():
     pygame.draw.line(screen, line_color, (line_start_x, line_start_y), (line_end_x, line_end_y), 15)
 
 
+def draw_text(text: str, text_bg_rectange: pygame.Rect, colors: tuple[str, str]):
+    """
+    colors[0] -> Text background color
+    colors[1] -> Text color
+    """
+
+    text_surface = text_font.render(text, True, colors[1])
+    text_rectangle = text_surface.get_rect(center=text_bg_rectange.center)
+
+    pygame.draw.rect(screen, colors[0], text_bg_rectange)
+    screen.blit(text_surface, text_rectangle)
+
+
 # Pygame Initialization
 pygame.init()
 WIDTH, HEIGHT = 800, 700  # 8:7 is recommended ratio for resolution
@@ -154,9 +166,9 @@ game_board = Board(BOARD_SIZE)
 
 game_over = False
 has_moved = False
-primary_color = "#14bdac"
-accent_color = "white"
-secondary_color = "#3b3b3b"
+green_bg_color = "#14bdac"
+black_bg_color = "#3b3b3b"
+foreground_color = "white"
 title = ""
 
 # Making Board
@@ -181,7 +193,6 @@ if GAME_MODE == 1:
 
 while True:
     if not game_over:
-
         # Updating Title
         if game_board.state.check_win(game_board.get_other_player()):
             title = f"Winner: {game_board.state.win_data.winner}"
@@ -215,8 +226,8 @@ while True:
             game_board.ai_play()
 
     # Drawing everything
-    screen.fill(primary_color)
-    pygame.draw.rect(screen, accent_color, board_rect)
+    screen.fill(green_bg_color)
+    pygame.draw.rect(screen, foreground_color, board_rect)
     draw_grid()
     draw_marks()
     draw_win_line()
@@ -226,10 +237,7 @@ while True:
         reset_button.update()
 
     # Title
-    pygame.draw.rect(screen, secondary_color, title_bg_rect)
-    title_text_surf = text_font.render(title, True, accent_color)
-    title_text_rect = title_text_surf.get_rect(center=title_bg_rect.center)
-    screen.blit(title_text_surf, title_text_rect)
+    draw_text(title, title_bg_rect, (black_bg_color, foreground_color))
 
     pygame.display.update()
     clock.tick(60)

@@ -1,5 +1,18 @@
-from .state_data import WinType, WinData, GameState
+"""
+NOTE ABOUT WINDATA
+------------------
+The methods for of this module updates the values of WinData class with values which are zero indexed,
+Hence if the board looked like:
+  1 2 3
+1 _ O O
+2 X X X
+3 _ _ _
+
+The check_horizontal method of this module for this board would update (0, 1), (1, 1), (1, 2) as win_line
+"""
+
 from .grid import Grid
+from .state_data import WinType, WinData, GameState
 
 
 class StateChecker:
@@ -15,17 +28,20 @@ class StateChecker:
 
     Methods
     -------
-        check_state(other_player: str) -> GamesState
+        check_state(other_player: str, update_win_data: bool) -> GameState
             checks if there is a win or draw on the grid or the game is not over
             combines check_win and check_draw together and ensures game state is checked
             the right way, see IMPORTANT to read about "the right way"
-        check_win(other_player: str) -> bool
+        check_win(other_player: str, update_win_data: bool) -> bool
             checks if a player has won on the board using the grid and updates the win_data accordingly
         check_draw() -> bool
-            checks if the game is drawn
+            checks if the game is drawn, read its IMPORTANT section for more info
 
     IMPORTANT
     ---------
+    For most cases check_state method should be used.
+
+    If check_win and check_draw are called individually then,
     check_win must be called before check_draw while checking the state of the game
     because check_draw just checks if there is no EMPTY_CELL on the grid, and if that happens
     then it returns True but a situation can occur when the board is full and it a victory for a player but
@@ -37,7 +53,7 @@ class StateChecker:
         self.grid = grid
         self.win_data = WinData()
 
-    def check_state(self, other_player: str) -> GameState:
+    def check_state(self, other_player: str, update_win_data: bool = True) -> GameState:
         """Checks if there is a win or draw on the grid or the game is not over
 
         Parameters
@@ -47,13 +63,18 @@ class StateChecker:
                 board.get_other_player() returns the expected parameter
                 where board is an instance of Board class
 
+            update_win_data : bool
+                Flag to update or not update win data if win is detected
+                When set to False, does not update the win_data attribute of the state checker
+                Useful when working with AI for tic tac toe.
+
         Returns
         -------
             GameState
                 Enum type telling if the game is won, drawn, or is ongoing
 
         """
-        if self.check_win(other_player):
+        if self.check_win(other_player, update_win_data):
             return GameState.WIN
         if self.check_draw():
             return GameState.DRAW
@@ -77,47 +98,53 @@ class StateChecker:
                 return False
         return True
 
-    def check_win(self, other_player: str) -> bool:
+    def check_win(self, winner_mark: str, update_win_data: bool = True) -> bool:
         """Checks for win on the board
 
         Returns True if a player has won the game and updates win_data
 
         Parameters
         ----------
-            other_player : str
-                mark of the player other than whose turn it is to move
-                i.e. the player who played the last move
+            update_win_data : bool
+                Flag to update win data attribute or not if win occours
+            winner_mark : str
+                mark of the player with whom to update to win data if a victory is detected
         """
 
-        if self.check_horizontal() or self.check_vertical() or self.check_diagonal():
-            self.win_data.winner = other_player
+        if self.check_horizontal(update_win_data) or self.check_vertical(update_win_data) \
+                or self.check_diagonal(update_win_data):
+            if update_win_data:
+                self.win_data.winner = winner_mark
             return True
+
         return False
 
-    def check_horizontal(self) -> bool:
+    def check_horizontal(self, update_win_data: bool = True) -> bool:
         """Checks for horizontal/row wise win and updates win_data"""
         for row_num, row in enumerate(self.grid.grid):
 
             if self.grid.is_line_winning(row):
-                self.win_data.win_line = [(row_num, column_num) for column_num in range(self.grid.size)]
-                self.win_data.win_type = WinType.HORIZONTAL
+                if update_win_data:
+                    self.win_data.win_line = [(row_num, column_num) for column_num in range(self.grid.size)]
+                    self.win_data.win_type = WinType.HORIZONTAL
                 return True
 
         return False
 
-    def check_vertical(self) -> bool:
+    def check_vertical(self, update_win_data: bool = True) -> bool:
         """Checks for vertical/column wise win and updates win_data"""
         for column_num in range(self.grid.size):
             column = [self.grid.get_cell(row_num, column_num) for row_num in range(self.grid.size)]
 
             if self.grid.is_line_winning(column):
-                self.win_data.win_line = [(row_num, column_num) for row_num in range(self.grid.size)]
-                self.win_data.win_type = WinType.VERTICAL
+                if update_win_data:
+                    self.win_data.win_line = [(row_num, column_num) for row_num in range(self.grid.size)]
+                    self.win_data.win_type = WinType.VERTICAL
                 return True
 
         return False
 
-    def check_diagonal(self) -> bool:
+    def check_diagonal(self, update_win_data: bool = True) -> bool:
         """Checks for a diagonal win and updates win_data"""
         win_diagonal = None
         grid_size = self.grid.size
@@ -126,13 +153,14 @@ class StateChecker:
 
         if self.grid.is_line_winning(diagonal_1):
             win_diagonal = [(i, i) for i in range(grid_size)]
-
         elif self.grid.is_line_winning(diagonal_2):
             win_diagonal = [((grid_size - 1) - i, i) for i in range(grid_size)]
 
         if not win_diagonal:
             return False
 
-        self.win_data.win_line = win_diagonal
-        self.win_data.win_type = WinType.DIAGONAL
+        if update_win_data:
+            self.win_data.win_line = win_diagonal
+            self.win_data.win_type = WinType.DIAGONAL
+
         return True

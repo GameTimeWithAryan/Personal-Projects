@@ -45,3 +45,6 @@ game_board.grid.print_grid()
 
 Documentation of the code should be read to get an idea of all the methods available. These methods can be chained
 together to form a game.
+
+## Zero-indexed or One-indexed?
+All methods of this module will take zero indexed values as their inputs and return them their outputs

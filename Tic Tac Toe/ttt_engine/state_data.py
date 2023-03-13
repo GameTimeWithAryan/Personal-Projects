@@ -1,3 +1,16 @@
+"""
+Winning line - The line of marks of a player which caused the played to win, for example
+  1 2 3
+1 _ O O
+2 X X X
+3 _ _ _
+
+Here coordinates (1, 2), (2, 2), (3, 2) will form the winning line for player 'X'
+P.S. -
+Don't confuse these coordinates with the coordinates with tuples to be returned by any implementation
+See state checker for how it implements and updates win_line
+"""
+
 from enum import StrEnum, auto
 from dataclasses import dataclass, field
 
