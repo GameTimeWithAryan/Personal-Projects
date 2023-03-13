@@ -4,9 +4,6 @@ Contains Board class to control the board and play the game
 
 Usage
 -----
-Defining a board:
-game_board = Board(3)
-
 Board setup for custom use:
 custom_board = Board(3)
 custom_board.grid.grid = [[custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL],
@@ -100,10 +97,7 @@ class Board:
 
     def ai_play(self):
         """Use the minmax AI function to get the best move and play it"""
-        # Creating a copy of board to avoid the updating the win_data while trying to find best moves
-        # as minmax board requires to play many moves and check for win which would update win data of board
-        minmax_board = copy.deepcopy(self)
-        move = minmax(minmax_board, maximizing=True, evaluating=False)  # Get best move
+        move = minmax(self, maximizing=True, evaluating=False)  # Get best move
         self.play_move(move[0], move[1])
 
 

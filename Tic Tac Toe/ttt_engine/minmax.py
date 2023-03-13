@@ -2,6 +2,7 @@ from math import inf
 from typing import TypeAlias
 
 from .grid import Coordinate
+from .state_data import GameState
 
 Board: TypeAlias = 'Board'
 
@@ -27,7 +28,8 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
     best_move: Coordinate | None = None
 
     # BASE CASES
-    if minmax_board.state.check_win(minmax_board.get_other_player()):
+    game_state = minmax_board.state.check_state(minmax_board.get_other_player(), update_win_data=False)
+    if game_state == GameState.WIN:
         if evaluating:
             # If current player is the maximizing player then it means the other player played the winning move
             # Hence it returns -1 as eval, and vice versa
@@ -35,7 +37,7 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
         else:
             return None
 
-    if minmax_board.state.check_draw():
+    if game_state == GameState.DRAW:
         return 0 if evaluating else None
 
     # MINMAX ALGORITHM

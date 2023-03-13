@@ -1,4 +1,4 @@
-from ttt_engine import Board
+from ttt_engine import Board, GameState
 
 game_board = Board(3)
 
@@ -34,7 +34,6 @@ def play_move(move: str | tuple[int, int]):
 
 def select_game_mode():
     AI_PLAYER = 1
-
     AI_MODE = int(input("Do you want to play with AI? [0 for No | 1 for Yes] - "))
     if AI_MODE == 1:
         AI_PLAYER = int(input("Should AI play the first move or you? [0 for AI | 1 for Yourself] - "))
@@ -54,11 +53,11 @@ def console_game():
             game_board.ai_play()
             game_board.grid.print_grid()
 
-        if game_board.state.check_win(game_board.get_other_player()):
+        game_state = game_board.state.check_state(game_board.get_other_player())
+        if game_state == GameState.WIN:
             print(game_board.state.win_data.winner, "WON")
             break
-
-        elif game_board.state.check_draw():
+        elif game_board == GameState.DRAW:
             print("DRAW")
             break
 

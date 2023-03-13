@@ -3,7 +3,7 @@ This file does not follow SOLID principles or any good coding techniques
 """
 
 import pygame
-from ttt_engine import Board, WinType
+from ttt_engine import Board, WinType, GameState
 
 # Game variables
 BOARD_SIZE = 3
@@ -194,10 +194,11 @@ if GAME_MODE == 1:
 while True:
     if not game_over:
         # Updating Title
-        if game_board.state.check_win(game_board.get_other_player()):
+        game_state = game_board.state.check_state(game_board.get_other_player())
+        if game_state == GameState.WIN:
             title = f"Winner: {game_board.state.win_data.winner}"
             game_over = True
-        elif game_board.state.check_draw():
+        elif game_state == GameState.DRAW:
             title = "Draw"
             game_over = True
         else:
