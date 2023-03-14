@@ -11,20 +11,43 @@ Hence if the board looked like:
 The check_horizontal method of this module for this board would update (0, 1), (1, 1), (1, 2) as win_line
 """
 
+from abc import ABC, abstractmethod
+
 from .grid import Grid
 from .state_data import WinType, WinData, GameState
 
 
-class StateChecker:
+class StateChecker(ABC):
+    @property
+    @abstractmethod
+    def win_data(self):
+        pass
+
+    @abstractmethod
+    def check_state(self, winner_mark: str, update_win_data: bool = True) -> GameState:
+        """Checks if the game is a draw or a win of any player"""
+
+    @abstractmethod
+    def check_win(self, winner_mark: str, update_win_data: bool = True) -> GameState:
+        """Checks if a player has won the game
+        if yes, then updates the win_data if `update_win_data` flag is True"""
+
+    @abstractmethod
+    def check_draw(self) -> GameState:
+        """Checks if the game is drawn"""
+
+
+class DefaultStateChecker(StateChecker):
     """Class for checking for win or draw using the grid and updating win_data accordingly
 
     Attributes
     ----------
         grid : Grid
-            grid which is used to check the state of the board when methods of StateChecker are called
+            grid which is used to check the state of the board when methods of DefaultStateChecker are called
             to check for win or draw on the board
-        win_data : WinData
+        _win_data : WinData
             contains win data of the game to manage and update it
+            use `self.win_data` property to access `_win_data`
 
     Methods
     -------
@@ -51,17 +74,19 @@ class StateChecker:
 
     def __init__(self, grid: Grid):
         self.grid = grid
-        self.win_data = WinData()
+        self._win_data = WinData()
 
-    def check_state(self, other_player: str, update_win_data: bool = True) -> GameState:
+    @property
+    def win_data(self):
+        return self._win_data
+
+    def check_state(self, winner_mark: str, update_win_data: bool = True) -> GameState:
         """Checks if there is a win or draw on the grid or the game is not over
 
         Parameters
         ----------
-            other_player : str
-                Mark of the player other than whose turn it is to move
-                board.get_other_player() returns the expected parameter
-                where board is an instance of Board class
+            winner_mark : str
+                mark of the player with whom to update to win data if a victory is detected
 
             update_win_data : bool
                 Flag to update or not update win data if win is detected
@@ -74,7 +99,7 @@ class StateChecker:
                 Enum type telling if the game is won, drawn, or is ongoing
 
         """
-        if self.check_win(other_player, update_win_data):
+        if self.check_win(winner_mark, update_win_data):
             return GameState.WIN
         if self.check_draw():
             return GameState.DRAW

@@ -19,9 +19,11 @@ import copy
 from colorama import Fore
 
 from .grid import Grid
-from .state_checker import StateChecker
 from .minmax import minmax, evaluate
+from .state_checker import StateChecker, DefaultStateChecker
 
+
+# TODO : Decouple methods from depending upon the fact that only 2 players will be playing
 
 class Board:
     """Board class for managing the game
@@ -42,12 +44,16 @@ class Board:
             Instance of StateChecker to check wins or draws and update win_data accordingly
     """
 
-    def __init__(self, size: int = 3):
+    def __init__(self, size: int = 3, state_checker: StateChecker = None):
+        # player_index is zero_indexed variable for indexing players list
         self.player_index: int = 0
         self.players: list[str] = ["X", "O"]
 
         self.grid: Grid = Grid(size)
-        self.state: StateChecker = StateChecker(self.grid)
+
+        if state_checker is None:
+            state_checker = DefaultStateChecker(self.grid)
+        self.state: StateChecker = state_checker
 
     def reset(self):
         self.__init__(self.grid.size)
