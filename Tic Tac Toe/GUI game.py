@@ -53,7 +53,7 @@ class Button:
 
 
 def get_mark_color():
-    return "#FF615F" if game_board.get_current_player() == game_board.players[1] else "#3EC5F3"
+    return "#FF615F" if game_board.get_current_mark() == game_board.players[1] else "#3EC5F3"
 
 
 def is_mouse_on_board(mouse_position: tuple[int, int]):
@@ -194,7 +194,7 @@ if GAME_MODE == 1:
 while True:
     if not game_over:
         # Updating Title
-        game_state = game_board.state.check_state(game_board.get_other_player())
+        game_state = game_board.state.check_state(game_board.get_preceding_mark())
         if game_state == GameState.WIN:
             title = f"Winner: {game_board.state.win_data.winner}"
             game_over = True
@@ -202,7 +202,7 @@ while True:
             title = "Draw"
             game_over = True
         else:
-            title = game_board.get_current_player()
+            title = game_board.get_current_mark()
 
     # Event Loop
     for event in pygame.event.get():

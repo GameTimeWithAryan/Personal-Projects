@@ -23,8 +23,6 @@ from .minmax import minmax, evaluate
 from .state_checker import StateChecker, DefaultStateChecker
 
 
-# TODO : Decouple methods from depending upon the fact that only 2 players will be playing
-
 class Board:
     """Board class for managing the game
 
@@ -41,7 +39,7 @@ class Board:
         grid : Grid
             Instance of Grid class for managing the grid
         state : StateChecker
-            Instance of StateChecker to check wins or draws and update win_data accordingly
+            Subclass of ABC StateChecker to check wins or draws and access Win Data
     """
 
     def __init__(self, size: int = 3, state_checker: StateChecker = None):
@@ -70,36 +68,49 @@ class Board:
                 If True, play_move marks an Empty cell on the given coordinate i.e. unplays the move
                 If False, marks the player whose turn it was on the given coordinate"""
 
-        mark = self.get_current_player()
-        if unplay:
+        if not unplay:
+            mark = self.get_current_mark()
+            self.select_preceding_player()
+        else:
             mark = self.grid.EMPTY_CELL
+            self.select_preceding_player()
 
         self.grid.update_cell(row, column, mark)
-        self.switch_player()
 
-    def get_current_player(self) -> str:
+    def get_current_mark(self) -> str:
         """Get the mark of current player"""
         return self.players[self.player_index]
 
-    def get_other_player(self) -> str:
-        """Get the mark of the player other than the current player"""
-        return self.players[self.get_other_player_index()]
+    def get_preceding_mark(self) -> str:
+        """Get the mark of the player who played the preceding move"""
+        return self.players[self.get_preceding_index()]
 
-    def get_other_player_index(self) -> int:
-        return int(not self.player_index)
+    def get_next_index(self) -> int:
+        """Returns index of next player
+        Wraps to the starting index (0) when player_index becomes larger than the last player's index"""
+        next_player_index = self.player_index + 1
+        if next_player_index == len(self.players):
+            next_player_index = 0
+        return next_player_index
 
-    def switch_player(self):
-        """Change current player index to the other player"""
-        self.player_index = self.get_other_player_index()
+    def get_preceding_index(self) -> int:
+        """Returns index of preceding player
+        Wraps to the end index of `self.players` list when player_index becomes smaller than 0"""
+        last_player_index = self.player_index - 1
+        if last_player_index == -1:
+            last_player_index = len(self.players) - 1
+        return last_player_index
 
-    def fix_attributes(self):
-        """Manually fix/assign attributes of the class by checking the board state
+    def select_next_player(self):
+        self.player_index = self.get_next_index()
+
+    def select_preceding_player(self):
+        self.player_index = self.get_preceding_index()
+
+    def fix_player_index(self):
+        """Fix player_index by checking the board state
             Must be run when working with custom setup"""
-
-        if len(self.grid.get_legal_moves()) % 2 == 1:
-            self.player_index = 0
-        else:
-            self.player_index = 1
+        raise NotImplementedError("Sorry I was too tired to implement this")
 
     def ai_play(self):
         """Use the minmax AI function to get the best move and play it"""
@@ -109,12 +120,7 @@ class Board:
 
 ################## CUSTOM SETUP #########################
 def evaluate_position(board: Board):
-    """Evaluates each legal move and prints it with the grid telling eval of each move
-
-    Parameters
-    ----------
-    board : Board
-        board to evaluate"""
+    """Evaluates each legal move and prints it with the grid telling eval of each move"""
 
     str_evaluations: list[str] = []
     legal_moves = board.grid.get_legal_moves()
@@ -133,9 +139,9 @@ def evaluate_position(board: Board):
     for index, (row, column) in enumerate(legal_moves):
         eval_grid.update_cell(row, column, str_evaluations[index])
 
-    # PRINTING
+    # PRINTING STUFF
     eval_grid.print_grid()
-    print(f"Player Turn: {board.get_current_player()}\n")
+    print(f"Player Turn: {board.get_current_mark()}\n")
     print(" 0 - Draw")
     print(f" 1 - {board.players[0]} Wins")
     print(f"-1 - {board.players[1]} Wins")
