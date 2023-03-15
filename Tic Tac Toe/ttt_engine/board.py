@@ -39,13 +39,16 @@ class Board:
         grid : Grid
             Instance of Grid class for managing the grid
         state : StateChecker
-            Subclass of ABC StateChecker to check wins or draws and access Win Data
+            Any subclass of ABC StateChecker to check wins or draws and access Win Data
     """
 
-    def __init__(self, size: int = 3, state_checker: StateChecker = None):
+    def __init__(self, size: int = 3, players: list[str] = None, state_checker: StateChecker = None):
         # player_index is zero_indexed variable for indexing players list
         self.player_index: int = 0
-        self.players: list[str] = ["X", "O"]
+
+        if players is None:
+            players = ["X", "O"]
+        self.players: list[str] = players
 
         self.grid: Grid = Grid(size)
 
@@ -70,10 +73,10 @@ class Board:
 
         if not unplay:
             mark = self.get_current_mark()
-            self.select_preceding_player()
+            self.select_next_player()
         else:
             mark = self.grid.EMPTY_CELL
-            self.select_preceding_player()
+            self.select_previous_player()
 
         self.grid.update_cell(row, column, mark)
 
@@ -81,9 +84,9 @@ class Board:
         """Get the mark of current player"""
         return self.players[self.player_index]
 
-    def get_preceding_mark(self) -> str:
-        """Get the mark of the player who played the preceding move"""
-        return self.players[self.get_preceding_index()]
+    def get_previous_mark(self) -> str:
+        """Get the mark of the player who played the previous move"""
+        return self.players[self.get_previous_index()]
 
     def get_next_index(self) -> int:
         """Returns index of next player
@@ -93,8 +96,8 @@ class Board:
             next_player_index = 0
         return next_player_index
 
-    def get_preceding_index(self) -> int:
-        """Returns index of preceding player
+    def get_previous_index(self) -> int:
+        """Returns index of previous player
         Wraps to the end index of `self.players` list when player_index becomes smaller than 0"""
         last_player_index = self.player_index - 1
         if last_player_index == -1:
@@ -104,11 +107,11 @@ class Board:
     def select_next_player(self):
         self.player_index = self.get_next_index()
 
-    def select_preceding_player(self):
-        self.player_index = self.get_preceding_index()
+    def select_previous_player(self):
+        self.player_index = self.get_previous_index()
 
     def fix_player_index(self):
-        """Fix player_index by checking the board state
+        """Fix player_index to correct player by checking the board state
             Must be run when working with custom setup"""
         raise NotImplementedError("Sorry I was too tired to implement this")
 

@@ -53,7 +53,7 @@ def console_game():
             game_board.ai_play()
             game_board.grid.print_grid()
 
-        game_state = game_board.state.check_state(game_board.get_preceding_mark())
+        game_state = game_board.state.check_state(game_board.get_previous_mark())
         if game_state == GameState.WIN:
             print(game_board.state.win_data.winner, "WON")
             break

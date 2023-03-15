@@ -194,7 +194,7 @@ if GAME_MODE == 1:
 while True:
     if not game_over:
         # Updating Title
-        game_state = game_board.state.check_state(game_board.get_preceding_mark())
+        game_state = game_board.state.check_state(game_board.get_previous_mark())
         if game_state == GameState.WIN:
             title = f"Winner: {game_board.state.win_data.winner}"
             game_over = True
