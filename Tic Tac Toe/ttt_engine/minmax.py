@@ -18,10 +18,14 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
         minmax_board : Board
             A copy of the original board
         maximizing : bool
-            Maximizing or the Minimizing player in minmax algorithm
+            Maximizing or the Minimizing player in the minmax algorithm
         evaluating : bool
             When evaluating is True, returns the evaluation of the position
             When evaluating is False, returns the best move on the board """
+
+    DRAW = 0
+    MAXIMIZER_WIN = 1
+    MINIMIZER_WIN = -1
 
     min_eval = inf
     max_eval = -inf
@@ -32,13 +36,12 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
     if game_state == GameState.WIN:
         if evaluating:
             # If current player is the maximizing player then it means the other player played the winning move
-            # Hence it returns -1 as eval, and vice versa
-            return -1 if maximizing else 1
+            # Hence it returns MINIMIZER_WIN as eval, and vice versa
+            return MINIMIZER_WIN if maximizing else MAXIMIZER_WIN
         else:
-            return None
-
+            return best_move
     if game_state == GameState.DRAW:
-        return 0 if evaluating else None
+        return DRAW if evaluating else None
 
     # MINMAX ALGORITHM
     for move in minmax_board.grid.get_legal_moves():
@@ -47,17 +50,13 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
             if evaluation > max_eval:
                 max_eval = evaluation
                 best_move = move
-
-            # If the best move is found for maximizing player then return
-            # No need to check for other moves as any other move cannot be better than eval of +1
-            if max_eval == 1:
+            if max_eval == MAXIMIZER_WIN:
                 return max_eval if evaluating else best_move
-
-        elif not maximizing:
+        else:
             if evaluation < min_eval:
                 min_eval = evaluation
                 best_move = move
-            if min_eval == -1:
+            if min_eval == MINIMIZER_WIN:
                 return min_eval if evaluating else best_move
 
     if evaluating:

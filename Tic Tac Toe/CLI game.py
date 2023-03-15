@@ -27,7 +27,6 @@ def play_move(move: str | tuple[int, int]):
     if move == "ai":
         game_board.ai_play()
         return
-
     row, column = move
     game_board.play_move(row, column)
 
@@ -37,7 +36,6 @@ def select_game_mode():
     AI_MODE = int(input("Do you want to play with AI? [0 for No | 1 for Yes] - "))
     if AI_MODE == 1:
         AI_PLAYER = int(input("Should AI play the first move or you? [0 for AI | 1 for Yourself] - "))
-
     return AI_MODE, AI_PLAYER
 
 
@@ -48,7 +46,6 @@ def console_game():
     game_board.grid.print_grid()
 
     while True:
-
         if AI_MODE == 1 and AI_PLAYER == 0:
             game_board.ai_play()
             game_board.grid.print_grid()

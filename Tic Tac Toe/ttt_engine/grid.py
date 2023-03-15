@@ -51,8 +51,6 @@ class Grid:
                 gets all legal moves on the board
             print_grid()
                 prints the grid
-            is_line_winning(line)
-                checks if a line (list) contains marks of the same player
     """
 
     EMPTY_CELL = "_"
@@ -108,19 +106,3 @@ class Grid:
         for index, row in enumerate(self.grid):
             print(f'{index + 1} {" ".join(row)}')
         print()
-
-    @staticmethod
-    def is_line_winning(line: list[str]) -> bool:
-        """Checks if all the cells in a line are of same player and not empty,
-
-            A line of cells can be passed to check if they create a win condition which means a
-            player has won the game"""
-
-        first_mark = line[0]
-        if first_mark == Grid.EMPTY_CELL:
-            return False
-
-        for mark in line[1:]:
-            if mark != first_mark:
-                return False
-        return True

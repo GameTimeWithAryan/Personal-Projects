@@ -1,16 +1,3 @@
-"""
-NOTE ABOUT WINDATA
-------------------
-The methods for of this module updates the values of WinData class with values which are zero indexed,
-Hence if the board looked like:
-  1 2 3
-1 _ O O
-2 X X X
-3 _ _ _
-
-The check_horizontal method of this module for this board would update (0, 1), (1, 1), (1, 2) as win_line
-"""
-
 from abc import ABC, abstractmethod
 
 from .grid import Grid
@@ -21,7 +8,8 @@ class StateChecker(ABC):
     @property
     @abstractmethod
     def win_data(self):
-        pass
+        """Implement an instance var _win_data and use @property to access it
+        .win_data should be accessible publicly"""
 
     @abstractmethod
     def check_state(self, winner_mark: str, update_win_data: bool = True) -> GameState:
@@ -59,6 +47,8 @@ class DefaultStateChecker(StateChecker):
             checks if a player has won on the board using the grid and updates the win_data accordingly
         check_draw() -> bool
             checks if the game is drawn, read its IMPORTANT section for more info
+        is_line_winning(line)
+            checks if a line (list) contains marks of the same player
 
     IMPORTANT
     ---------
@@ -148,7 +138,7 @@ class DefaultStateChecker(StateChecker):
         """Checks for horizontal/row wise win and updates win_data"""
         for row_num, row in enumerate(self.grid.grid):
 
-            if self.grid.is_line_winning(row):
+            if self.is_line_winning(row):
                 if update_win_data:
                     self.win_data.win_line = [(row_num, column_num) for column_num in range(self.grid.size)]
                     self.win_data.win_type = WinType.HORIZONTAL
@@ -161,7 +151,7 @@ class DefaultStateChecker(StateChecker):
         for column_num in range(self.grid.size):
             column = [self.grid.get_cell(row_num, column_num) for row_num in range(self.grid.size)]
 
-            if self.grid.is_line_winning(column):
+            if self.is_line_winning(column):
                 if update_win_data:
                     self.win_data.win_line = [(row_num, column_num) for row_num in range(self.grid.size)]
                     self.win_data.win_type = WinType.VERTICAL
@@ -176,9 +166,9 @@ class DefaultStateChecker(StateChecker):
         diagonal_1 = [self.grid.get_cell(i, i) for i in range(grid_size)]
         diagonal_2 = [self.grid.get_cell((grid_size - 1) - i, i) for i in range(grid_size)]
 
-        if self.grid.is_line_winning(diagonal_1):
+        if self.is_line_winning(diagonal_1):
             win_diagonal = [(i, i) for i in range(grid_size)]
-        elif self.grid.is_line_winning(diagonal_2):
+        elif self.is_line_winning(diagonal_2):
             win_diagonal = [((grid_size - 1) - i, i) for i in range(grid_size)]
 
         if not win_diagonal:
@@ -188,4 +178,17 @@ class DefaultStateChecker(StateChecker):
             self.win_data.win_line = win_diagonal
             self.win_data.win_type = WinType.DIAGONAL
 
+        return True
+
+    @staticmethod
+    def is_line_winning(line: list[str]) -> bool:
+        """Checks if all the cells in a line are of same player and not empty"""
+
+        first_mark = line[0]
+        if first_mark == Grid.EMPTY_CELL:
+            return False
+
+        for mark in line[1:]:
+            if mark != first_mark:
+                return False
         return True
