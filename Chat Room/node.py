@@ -5,9 +5,14 @@ in a packet of size `HEADER` and then the actual message
 """
 
 import socket
-from enum import Enum
+from enum import Enum, StrEnum, auto
 
 HEADER = 5
+
+
+class MessageType(StrEnum):
+    INFO = auto()  # "{name} entered the chat" like messages
+    MESSAGE = auto()  # Chat messages
 
 
 class ErrorCode(Enum):

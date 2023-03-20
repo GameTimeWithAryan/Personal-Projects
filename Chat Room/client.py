@@ -2,8 +2,7 @@ import socket
 import threading
 from sys import argv
 
-from node import NetworkNode
-from message_type import MessageType
+from node import NetworkNode, MessageType
 
 HOST = socket.gethostbyname(socket.gethostname())
 is_alive: bool = True

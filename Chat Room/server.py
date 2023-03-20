@@ -1,8 +1,7 @@
 import socket
 import threading
 
-from node import NetworkNode
-from message_type import MessageType
+from node import NetworkNode, MessageType
 
 # It can be used in broadcast_message function to indicate
 # the intent to broadcast the message to all clients and not exclude anyone
