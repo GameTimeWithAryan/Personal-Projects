@@ -21,24 +21,39 @@ def broadcast_message(exlcue_address: tuple[str, int], sender_name: str | None, 
             c_node.send_message(message)
 
 
-def handle_client(connection: socket.socket):
+def handle_client(connection: socket.socket, address: tuple[str, int]):
     client_node = NetworkNode(connection)
     clients.append(client_node)
 
-    name = client_node.recv_message()
-    print(f"[NAME] {client_node.connection.getpeername()}: {name}")
+    while True:
+        try:
+            name = client_node.recv_message()
+            break
+        except socket.error:
+            print("Connection broken")
+            return
+        except ValueError:
+            print("Received invalid message length")
+            client_node.send_message("INVALID_MESSAGE_LENGTH")
+
+    print(f"[NAME] {address}: {name}")
+
     join_message = f"{name} Entered the chat"
     broadcast_message(NO_CLIENT_ADDRESS, None, join_message, MessageType.INFO.name)
 
     while True:
-        message = client_node.recv_message()
-        if message == b"" or isinstance(message, tuple):
+        try:
+            message = client_node.recv_message()
+        except socket.error:
             clients.remove(client_node)
             leave_message = f"{name} Left the chat"
-            broadcast_message(client_node.connection.getpeername(), None, leave_message, MessageType.INFO.name)
+            broadcast_message(address, None, leave_message, MessageType.INFO.name)
             break
+        except ValueError:
+            continue
+
         print(f"[MESSAGE] {name}: {message}")
-        broadcast_message(client_node.connection.getpeername(), name, message)
+        broadcast_message(address, name, message)
 
     print(f"[CLOSED] {name}")
 
@@ -52,5 +67,5 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as SERVER:
         client_socket, client_address = SERVER.accept()
         print(f"[CONNECTION] {client_address}")
 
-        thread = threading.Thread(target=handle_client, args=(client_socket,))
+        thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
         thread.start()

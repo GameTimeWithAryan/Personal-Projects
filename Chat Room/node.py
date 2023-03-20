@@ -5,19 +5,14 @@ in a packet of size `HEADER` and then the actual message
 """
 
 import socket
-from enum import Enum, StrEnum, auto
+from enum import StrEnum, auto
 
 HEADER = 5
 
 
 class MessageType(StrEnum):
-    INFO = auto()  # "{name} entered the chat" like messages
+    INFO = auto()  # "{name} entered the chat" like messages, info messages
     MESSAGE = auto()  # Chat messages
-
-
-class ErrorCode(Enum):
-    INVALID_MSG_LEN = -1
-    SOCKET_ERROR = -2
 
 
 class NetworkNode:
@@ -26,33 +21,29 @@ class NetworkNode:
     def __init__(self, connection: socket.socket):
         self.connection = connection
 
-    def recv(self, size: int) -> str | tuple[None, ErrorCode]:
-        """Receives an individual message packet"""
-        try:
-            return self.connection.recv(size).decode()
-        except socket.error:
-            return None, ErrorCode.SOCKET_ERROR
+    def recv(self, size: int) -> str:
+        """Receives an individual message packet
+        Raises - socket.error if Connection error is there"""
 
-    def recv_message(self) -> str | tuple[None, ErrorCode]:
+        return self.connection.recv(size).decode()
+
+    def recv_message(self) -> str:
         """Receives complete message
 
         Following communication protocol, receives message length and packets
         until complete message of that length is received
+
+        Raises
+        ------
+        socket.error - Connection error
+        ValueError - On invalid msg length
         """
 
         message = ""
-        try:
-            message_length = int(self.recv(HEADER))  # May raise ValueError
-            while len(message) < message_length:
-                received_message = self.recv(message_length - len(message))
-                message += received_message  # May raise Type error if received_message is None
-
-        except ValueError:
-            # received invalid message length
-            return None, ErrorCode.INVALID_MSG_LEN
-        except TypeError:
-            # None was returned by self.recv, due to socket error
-            return None, ErrorCode.SOCKET_ERROR
+        message_length = int(self.recv(HEADER))  # May raise ValueError
+        while len(message) < message_length:
+            received_message = self.recv(message_length - len(message))
+            message += received_message
 
         return message
 
@@ -64,16 +55,16 @@ class NetworkNode:
         """Sends a message to the remote connection
 
         Following communication protocol,
-        first sends the message length then the actual message
+        sends a packet containing HEADER and message body
         """
 
-        message_payload = self.make_send_payload(message)
+        message_payload = self.make_send_protocol_payload(message)
         self.send(message_payload)
 
     @staticmethod
-    def make_send_payload(message: str):
+    def make_send_protocol_payload(message: str):
         """Adds message length header at start"""
-        # length of bytes of message with padding to make it of size HEADER
+        # length of "bytes of message" with padding to make it of size HEADER
         message_length = f'{len(message.encode()):<{HEADER}}'
         payload = message_length + message
         return payload

@@ -25,19 +25,29 @@ def send_messages_to_server(client_node: NetworkNode):
 
 
 def receive_messages_from_server(client_node: NetworkNode):
+    received_message: str
     while is_alive:
-        message_type = client_node.recv_message()
-        if isinstance(message_type, tuple):
-            print("Connection Broken")
-            break
+        try:
+            message_type = client_node.recv_message()
 
-        if message_type == MessageType.INFO.name:
-            join_message = client_node.recv_message()
-            print(join_message)
-        else:
-            sender_name = client_node.recv_message()
-            message = client_node.recv_message()
-            print(f"{sender_name}: {message}")
+            # Usually a join or a leave message of a client
+            if message_type == MessageType.INFO.name:
+                received_message = client_node.recv_message()
+            # Chat Message of a client
+            elif message_type == MessageType.MESSAGE.name:
+                sender_name = client_node.recv_message()
+                message = client_node.recv_message()
+                received_message = f"{sender_name}: {message}"
+            else:
+                continue
+
+            print(received_message)
+
+        except socket.error:
+            print("Network error")
+            break
+        except ValueError:
+            print("Received invalid message length")
 
 
 def run_client():
