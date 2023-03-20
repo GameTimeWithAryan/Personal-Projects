@@ -10,18 +10,18 @@ is_alive: bool = True
 
 def send_messages_to_server(client_node: NetworkNode):
     global is_alive
-    client_node.send_message(NAME)
+    try:
+        client_node.send_message(NAME)
 
-    while True:
-        message = input()
-        if message == "quit":
-            is_alive = False
-            break
-        try:
+        while True:
+            message = input()
+            if message == "quit":
+                is_alive = False
+                break
             client_node.send_message(message)
-        except socket.error:
-            print("Stopping send service")
-            break
+    except socket.error:
+        print("Connection error, Stopping send service")
+        return
 
 
 def receive_messages_from_server(client_node: NetworkNode):

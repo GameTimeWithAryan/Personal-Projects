@@ -13,12 +13,18 @@ clients: list[NetworkNode] = []
 def broadcast_message(exlcue_address: tuple[str, int], sender_name: str | None, message: str,
                       message_type: str = MessageType.MESSAGE.name):
     """Send messages to all clients, when sender_name is None, sends the message, without sending name"""
+
     for c_node in clients:
-        if c_node.connection.getpeername() != exlcue_address:
-            c_node.send_message(message_type)
-            if sender_name:
-                c_node.send_message(sender_name)
-            c_node.send_message(message)
+        try:
+            if c_node.connection.getpeername() != exlcue_address:
+                c_node.send_message(message_type)
+                if sender_name:
+                    c_node.send_message(sender_name)
+                c_node.send_message(message)
+        except socket.error:
+            clients.remove(c_node)
+            print(f"[BROADCAST ERROR] Error when sending to {c_node.connection.getpeername()}")
+            print(f"[AUTOFIX] Removed {c_node.connection.getpeername()} from clients list")
 
 
 def handle_client(connection: socket.socket, address: tuple[str, int]):
@@ -34,7 +40,6 @@ def handle_client(connection: socket.socket, address: tuple[str, int]):
             return
         except ValueError:
             print("Received invalid message length")
-            client_node.send_message("INVALID_MESSAGE_LENGTH")
 
     print(f"[NAME] {address}: {name}")
 
