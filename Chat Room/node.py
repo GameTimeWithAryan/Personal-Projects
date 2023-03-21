@@ -10,8 +10,8 @@ from enum import StrEnum
 MSG_LEN_HEADER_SIZE = 5
 MSG_TYPE_HEADER_SIZE = 10
 HEADER_SIZE = MSG_LEN_HEADER_SIZE + MSG_TYPE_HEADER_SIZE
-CONN_ERROR_MSG = "Connection Broken"
-INVALID_MSG_LEN_ERROR_MSG = "Invlaid message length received"
+CONN_ERROR = "Connection Broken"
+INVALID_MSG_LEN_ERROR = "Invlaid message length received"
 
 
 class MessageType(StrEnum):

@@ -1,7 +1,7 @@
 import socket
 import threading
 
-from node import NetworkNode, MessageType, CONN_ERROR_MSG, INVALID_MSG_LEN_ERROR_MSG
+from node import NetworkNode, MessageType, CONN_ERROR, INVALID_MSG_LEN_ERROR
 
 # It can be used in broadcast_message function to indicate
 # the intent to broadcast the message to all clients and not exclude anyone
@@ -40,11 +40,10 @@ def handle_client(connection: socket.socket, address: tuple[str, int]):
             print(f"[{address}] Listening for name packet, receievd {message_type}")
         except socket.error as e:
             clients.remove(client_node)
-            print(CONN_ERROR_MSG)
             print(e.strerror)
             return
         except ValueError:
-            print(INVALID_MSG_LEN_ERROR_MSG)
+            print(INVALID_MSG_LEN_ERROR)
 
     # Name received
     print(f"[NAME] {address}: {name}")
@@ -66,8 +65,7 @@ def handle_client(connection: socket.socket, address: tuple[str, int]):
             print(f"[CLOSED] {name}")
             return
         except ValueError:
-            print(INVALID_MSG_LEN_ERROR_MSG)
-            print("Trying again")
+            print(INVALID_MSG_LEN_ERROR)
             continue
 
         print(f"[MESSAGE] {name}: {message}")

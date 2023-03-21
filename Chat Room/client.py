@@ -2,7 +2,7 @@ import socket
 import threading
 from sys import argv
 
-from node import NetworkNode, MessageType, CONN_ERROR_MSG, INVALID_MSG_LEN_ERROR_MSG
+from node import NetworkNode, MessageType, CONN_ERROR, INVALID_MSG_LEN_ERROR
 
 HOST, PORT = socket.gethostbyname(socket.gethostname()), 5050
 is_alive: bool = True
@@ -20,8 +20,7 @@ def send_messages_to_server(client_node: NetworkNode):
                 break
             client_node.send_message(message, MessageType.MSG)
     except socket.error:
-        print(CONN_ERROR_MSG)
-        print("Stopping send service")
+        print(f"[SENDER] {CONN_ERROR}")
         return
 
 
@@ -40,16 +39,16 @@ def receive_messages_from_server(client_node: NetworkNode):
                 _, chat_message = client_node.recv_message()
                 received_message = f"{sender_name}: {chat_message}"
             else:
-                print("Invalid message type, trying again")
+                print("Received invalid message type")
                 continue
 
             print(received_message)
 
         except socket.error:
-            print(CONN_ERROR_MSG)
+            print(CONN_ERROR)
             break
         except ValueError:
-            print(INVALID_MSG_LEN_ERROR_MSG)
+            print(INVALID_MSG_LEN_ERROR)
 
 
 def run_client():
