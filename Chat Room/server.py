@@ -17,7 +17,7 @@ def broadcast_message(exlcue_address: tuple[str, int], sender_name: str | None, 
     for c_node in clients.copy():
         try:
             if c_node.connection.getpeername() != exlcue_address:
-                if sender_name is not None:
+                if sender_name:
                     c_node.send_message(sender_name, MessageType.NAME)
                 c_node.send_message(message, message_type)
         except socket.error:
@@ -39,6 +39,7 @@ def handle_client(connection: socket.socket, address: tuple[str, int]):
                 break
             print(f"[{address}] Listening for name packet, receievd {message_type}")
         except socket.error as e:
+            clients.remove(client_node)
             print(CONN_ERROR_MSG)
             print(e.strerror)
             return
@@ -51,9 +52,10 @@ def handle_client(connection: socket.socket, address: tuple[str, int]):
     join_message = f"{name} Entered the chat"
     broadcast_message(NO_CLIENT_ADDRESS, None, join_message, MessageType.INFO)
 
+    # Listening for messages
     while True:
         try:
-            message_type, chat_message = client_node.recv_message()
+            message_type, message = client_node.recv_message()
             if message_type != MessageType.MSG.name:
                 print(f"[{address}] Listening for msg packet, received {message_type}")
                 continue
@@ -68,8 +70,8 @@ def handle_client(connection: socket.socket, address: tuple[str, int]):
             print("Trying again")
             continue
 
-        print(f"[MESSAGE] {name}: {chat_message}")
-        broadcast_message(address, name, chat_message)
+        print(f"[MESSAGE] {name}: {message}")
+        broadcast_message(address, name, message)
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as SERVER:
