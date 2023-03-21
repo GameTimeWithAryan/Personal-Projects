@@ -8,6 +8,8 @@ import socket
 from enum import StrEnum, auto
 
 HEADER = 5
+CONN_ERROR_MSG = "Connection Broken"
+INVALID_MSG_LEN_ERROR_MSG = "Invlaid message length received"
 
 
 class MessageType(StrEnum):
@@ -22,9 +24,7 @@ class NetworkNode:
         self.connection = connection
 
     def recv(self, size: int) -> str:
-        """Receives an individual message packet
-        Raises - socket.error if Connection error is there"""
-
+        """Receives an individual message packet"""
         return self.connection.recv(size).decode()
 
     def recv_message(self) -> str:
@@ -35,11 +35,11 @@ class NetworkNode:
 
         Raises
         ------
-        socket.error - Connection error
         ValueError - On invalid msg length
         """
 
         message = ""
+        # Receive message header, and listen for packets according to length in header
         message_length = int(self.recv(HEADER))  # May raise ValueError
         while len(message) < message_length:
             received_message = self.recv(message_length - len(message))
@@ -58,13 +58,13 @@ class NetworkNode:
         sends a packet containing HEADER and message body
         """
 
-        message_payload = self.make_send_protocol_payload(message)
-        self.send(message_payload)
+        message_packet = self.add_header(message)
+        self.send(message_packet)
 
     @staticmethod
-    def make_send_protocol_payload(message: str):
-        """Adds message length header at start"""
-        # length of "bytes of message" with padding to make it of size HEADER
+    def add_header(message: str):
+        """Adds message length header to message for sending"""
+        # length of "bytes of message" with padding to make its length equal to `HEADER`
         message_length = f'{len(message.encode()):<{HEADER}}'
-        payload = message_length + message
-        return payload
+        message_packet = message_length + message
+        return message_packet

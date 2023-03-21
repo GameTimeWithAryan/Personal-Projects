@@ -2,7 +2,7 @@ import socket
 import threading
 from sys import argv
 
-from node import NetworkNode, MessageType
+from node import NetworkNode, MessageType, CONN_ERROR_MSG, INVALID_MSG_LEN_ERROR_MSG
 
 HOST = socket.gethostbyname(socket.gethostname())
 is_alive: bool = True
@@ -20,7 +20,8 @@ def send_messages_to_server(client_node: NetworkNode):
                 break
             client_node.send_message(message)
     except socket.error:
-        print("Connection error, Stopping send service")
+        print(CONN_ERROR_MSG)
+        print("Stopping send service")
         return
 
 
@@ -39,21 +40,20 @@ def receive_messages_from_server(client_node: NetworkNode):
                 message = client_node.recv_message()
                 received_message = f"{sender_name}: {message}"
             else:
+                print("Invalid message type, trying again")
                 continue
 
             print(received_message)
 
         except socket.error:
-            print("Network error")
+            print(CONN_ERROR_MSG)
             break
         except ValueError:
-            print("Received invalid message length")
+            print(INVALID_MSG_LEN_ERROR_MSG)
 
 
 def run_client():
     """
-    Main function to connect to the server and send/recieve messages
-
     For communicating with the chat room server, allowing receiving and sending of messages
     at the same time, a thread of `receive_messages_from_server` function is created,
     while the `send_messages_to_server` function faclitates sending of messages to the server
