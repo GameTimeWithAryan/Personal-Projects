@@ -1,20 +1,23 @@
 """
 Protocol for communication:
 For sending/receiving data, NetworkNode first sends/recieves message length
-in a packet of size `HEADER` and then the actual message
+in a packet of size `HEADER_SIZE` and then the actual message
 """
 
 import socket
-from enum import StrEnum, auto
+from enum import StrEnum
 
-HEADER = 5
+MSG_LEN_HEADER_SIZE = 5
+MSG_TYPE_HEADER_SIZE = 10
+HEADER_SIZE = MSG_LEN_HEADER_SIZE + MSG_TYPE_HEADER_SIZE
 CONN_ERROR_MSG = "Connection Broken"
 INVALID_MSG_LEN_ERROR_MSG = "Invlaid message length received"
 
 
 class MessageType(StrEnum):
-    INFO = auto()  # "{name} entered the chat" like messages, info messages
-    MESSAGE = auto()  # Chat messages
+    INFO = "INFO"  # "{name} entered the chat" like messages, info messages
+    NAME = "NAME"  # for sharing names of clients between server and client
+    MSG = "MSG"  # chat messages
 
 
 class NetworkNode:
@@ -27,8 +30,8 @@ class NetworkNode:
         """Receives an individual message packet"""
         return self.connection.recv(size).decode()
 
-    def recv_message(self) -> str:
-        """Receives complete message
+    def recv_message(self) -> tuple[str, str]:
+        """Receives complete message with message type
 
         Following communication protocol, receives message length and packets
         until complete message of that length is received
@@ -39,32 +42,43 @@ class NetworkNode:
         """
 
         message = ""
-        # Receive message header, and listen for packets according to length in header
-        message_length = int(self.recv(HEADER))  # May raise ValueError
+        # Receive message length header, and listen for packets according to length in header
+        message_length = int(self.recv(MSG_LEN_HEADER_SIZE))  # May raise ValueError
+        # Receive message type header
+        message_type = self.recv(MSG_TYPE_HEADER_SIZE).strip()
+        # Receive message body
         while len(message) < message_length:
             received_message = self.recv(message_length - len(message))
             message += received_message
 
-        return message
+        return message_type, message
 
     def send(self, message: str):
         """Sends a single packet containing message"""
         self.connection.sendall(message.encode())
 
-    def send_message(self, message: str):
+    def send_message(self, message: str, message_type: MessageType):
         """Sends a message to the remote connection
 
         Following communication protocol,
-        sends a packet containing HEADER and message body
+        sends a packet containing header and message body
         """
 
-        message_packet = self.add_header(message)
+        message_packet = self.add_header(message, message_type.value)
         self.send(message_packet)
 
     @staticmethod
-    def add_header(message: str):
-        """Adds message length header to message for sending"""
-        # length of "bytes of message" with padding to make its length equal to `HEADER`
-        message_length = f'{len(message.encode()):<{HEADER}}'
-        message_packet = message_length + message
+    def add_header(message: str, message_type: str):
+        """Adds message length and message type headers to message for sending"""
+        # length of "bytes of message" with padding to make its length equal to `HEADER_SIZE`
+        message_length = f"{len(message.encode()):<{MSG_LEN_HEADER_SIZE}}"
+        message_type = f"{message_type:<{MSG_TYPE_HEADER_SIZE}}"
+        message_packet = message_length + message_type + message
         return message_packet
+
+    @staticmethod
+    def interpret_message(message_packet: str):
+        message_length = message_packet[:MSG_LEN_HEADER_SIZE].strip()
+        message_type = message_packet[MSG_LEN_HEADER_SIZE:MSG_TYPE_HEADER_SIZE].strip()
+        message = message_packet[MSG_TYPE_HEADER_SIZE:]
+        return message_length, message_type, message

@@ -4,21 +4,21 @@ from sys import argv
 
 from node import NetworkNode, MessageType, CONN_ERROR_MSG, INVALID_MSG_LEN_ERROR_MSG
 
-HOST = socket.gethostbyname(socket.gethostname())
+HOST, PORT = socket.gethostbyname(socket.gethostname()), 5050
 is_alive: bool = True
 
 
 def send_messages_to_server(client_node: NetworkNode):
     global is_alive
     try:
-        client_node.send_message(NAME)
+        client_node.send_message(NAME, MessageType.NAME)
 
         while True:
             message = input()
             if message == "quit":
                 is_alive = False
                 break
-            client_node.send_message(message)
+            client_node.send_message(message, MessageType.MSG)
     except socket.error:
         print(CONN_ERROR_MSG)
         print("Stopping send service")
@@ -29,16 +29,16 @@ def receive_messages_from_server(client_node: NetworkNode):
     received_message: str
     while is_alive:
         try:
-            message_type = client_node.recv_message()
+            message_type, message = client_node.recv_message()
 
             # Usually a join or a leave message of a client
-            if message_type == MessageType.INFO.name:
-                received_message = client_node.recv_message()
-            # Chat Message of a client
-            elif message_type == MessageType.MESSAGE.name:
-                sender_name = client_node.recv_message()
-                message = client_node.recv_message()
-                received_message = f"{sender_name}: {message}"
+            if message_type == MessageType.INFO.value:
+                received_message = message
+            elif message_type == MessageType.NAME.value:
+                sender_name = message
+                # if name of sender is received, chat message should follow
+                _, chat_message = client_node.recv_message()
+                received_message = f"{sender_name}: {chat_message}"
             else:
                 print("Invalid message type, trying again")
                 continue
@@ -60,7 +60,7 @@ def run_client():
     """
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-        client.connect((HOST, 5050))
+        client.connect((HOST, PORT))
         client_node = NetworkNode(client)
 
         receiver_thread = threading.Thread(target=receive_messages_from_server, args=(client_node,))

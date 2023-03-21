@@ -11,16 +11,15 @@ clients: list[NetworkNode] = []
 
 
 def broadcast_message(exlcue_address: tuple[str, int], sender_name: str | None, message: str,
-                      message_type: str = MessageType.MESSAGE.name):
+                      message_type: MessageType = MessageType.MSG):
     """Send messages to all clients, when sender_name is None, sends the message without sending name"""
 
     for c_node in clients.copy():
         try:
             if c_node.connection.getpeername() != exlcue_address:
-                c_node.send_message(message_type)
                 if sender_name is not None:
-                    c_node.send_message(sender_name)
-                c_node.send_message(message)
+                    c_node.send_message(sender_name, MessageType.NAME)
+                c_node.send_message(message, message_type)
         except socket.error:
             print(f"[BROADCAST ERROR] Error when sending to {c_node.connection.getpeername()}")
             clients.remove(c_node)
@@ -34,10 +33,14 @@ def handle_client(connection: socket.socket, address: tuple[str, int]):
     # Listening for name
     while True:
         try:
-            name = client_node.recv_message()
-            break
-        except socket.error:
+            message_type, message = client_node.recv_message()
+            if message_type == MessageType.NAME.value:
+                name = message
+                break
+            print(f"[{address}] Listening for name packet, receievd {message_type}")
+        except socket.error as e:
             print(CONN_ERROR_MSG)
+            print(e.strerror)
             return
         except ValueError:
             print(INVALID_MSG_LEN_ERROR_MSG)
@@ -46,15 +49,18 @@ def handle_client(connection: socket.socket, address: tuple[str, int]):
     print(f"[NAME] {address}: {name}")
 
     join_message = f"{name} Entered the chat"
-    broadcast_message(NO_CLIENT_ADDRESS, None, join_message, MessageType.INFO.name)
+    broadcast_message(NO_CLIENT_ADDRESS, None, join_message, MessageType.INFO)
 
     while True:
         try:
-            message = client_node.recv_message()
+            message_type, chat_message = client_node.recv_message()
+            if message_type != MessageType.MSG.name:
+                print(f"[{address}] Listening for msg packet, received {message_type}")
+                continue
         except socket.error:
             clients.remove(client_node)
             leave_message = f"{name} Left the chat"
-            broadcast_message(address, None, leave_message, MessageType.INFO.name)
+            broadcast_message(address, None, leave_message, MessageType.INFO)
             print(f"[CLOSED] {name}")
             return
         except ValueError:
@@ -62,8 +68,8 @@ def handle_client(connection: socket.socket, address: tuple[str, int]):
             print("Trying again")
             continue
 
-        print(f"[MESSAGE] {name}: {message}")
-        broadcast_message(address, name, message)
+        print(f"[MESSAGE] {name}: {chat_message}")
+        broadcast_message(address, name, chat_message)
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as SERVER:
