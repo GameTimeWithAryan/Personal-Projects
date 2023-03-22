@@ -10,14 +10,17 @@ from enum import StrEnum
 MSG_LEN_HEADER_SIZE = 5
 MSG_TYPE_HEADER_SIZE = 10
 HEADER_SIZE = MSG_LEN_HEADER_SIZE + MSG_TYPE_HEADER_SIZE
+
 CONN_ERROR = "Connection Broken"
 INVALID_MSG_LEN_ERROR = "Invlaid message length received"
+WRONG_PASSWORD_RESPONSE = "WRONG_PASSWORD"
 
 
 class MessageType(StrEnum):
+    PASSWORD = "PASSWORD"
     INFO = "INFO"  # "{name} entered the chat" like messages, info messages
     NAME = "NAME"  # for sharing names of clients between server and client
-    MSG = "MSG"  # chat messages
+    MESSAGE = "MESSAGE"  # chat messages
 
 
 class NetworkNode:

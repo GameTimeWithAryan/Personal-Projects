@@ -2,23 +2,50 @@ import socket
 import threading
 from sys import argv
 
-from node import NetworkNode, MessageType, CONN_ERROR, INVALID_MSG_LEN_ERROR
+from node import NetworkNode, MessageType, CONN_ERROR, INVALID_MSG_LEN_ERROR, WRONG_PASSWORD_RESPONSE
 
 HOST, PORT = socket.gethostbyname(socket.gethostname()), 5050
 is_alive: bool = True
 
 
+def authenticate_with_server(client_node: NetworkNode):
+    global is_alive, argv
+    while True:
+        try:
+            if len(argv) == 1:
+                name = input("Enter your name - ")
+            else:
+                name = argv[1]
+                argv = argv[:1]
+                print(f"Enter your name - {name}")
+            client_node.send_message(name, MessageType.NAME)
+            if name != "admin":
+                break
+
+            password = input("Enter your password - ")
+            client_node.send_message(password, MessageType.PASSWORD)
+
+            _, response = client_node.recv_message()
+            if response == WRONG_PASSWORD_RESPONSE:
+                print("Wrong password")
+                continue
+            print("Authenticated as admin successfully\n")
+            break
+        except socket.error as e:
+            print(CONN_ERROR)
+            is_alive = False
+
+
 def send_messages_to_server(client_node: NetworkNode):
     global is_alive
     try:
-        client_node.send_message(NAME, MessageType.NAME)
-
         while True:
             message = input()
             if message == "quit":
                 is_alive = False
                 break
-            client_node.send_message(message, MessageType.MSG)
+            client_node.send_message(message, MessageType.MESSAGE)
+
     except socket.error:
         print(f"[SENDER] {CONN_ERROR}")
         return
@@ -29,7 +56,6 @@ def receive_messages_from_server(client_node: NetworkNode):
     while is_alive:
         try:
             message_type, message = client_node.recv_message()
-
             # Usually a join or a leave message of a client
             if message_type == MessageType.INFO.value:
                 received_message = message
@@ -41,7 +67,6 @@ def receive_messages_from_server(client_node: NetworkNode):
             else:
                 print("Received invalid message type")
                 continue
-
             print(received_message)
 
         except socket.error:
@@ -62,6 +87,8 @@ def run_client():
         client.connect((HOST, PORT))
         client_node = NetworkNode(client)
 
+        authenticate_with_server(client_node)
+
         receiver_thread = threading.Thread(target=receive_messages_from_server, args=(client_node,))
         receiver_thread.start()
 
@@ -73,11 +100,4 @@ if __name__ == "__main__":
     print("Type 'quit' to quit the program")
     print("Type and press enter to send message")
     print()
-
-    if len(argv) == 1:
-        NAME = input("Enter your name - ")
-    else:
-        NAME = argv[1]
-        print(f"Enter your name - {NAME}")
-
     run_client()
