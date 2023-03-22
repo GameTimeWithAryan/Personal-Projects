@@ -2,7 +2,7 @@ import socket
 import threading
 from sys import argv
 
-from node import NetworkNode, MessageType, CONN_ERROR, INVALID_MSG_LEN_ERROR, WRONG_PASSWORD_RESPONSE
+from node import NetworkNode, MessageType, CONN_ERROR, INVALID_MSG_LEN_ERROR, WRONG_PASSWORD_MSG
 
 HOST, PORT = socket.gethostbyname(socket.gethostname()), 5050
 is_alive: bool = True
@@ -13,20 +13,20 @@ def authenticate_with_server(client_node: NetworkNode):
     while True:
         try:
             if len(argv) == 1:
-                name = input("Enter your name - ")
+                username = input("Enter your username - ")
             else:
-                name = argv[1]
+                username = argv[1]
                 argv = argv[:1]
-                print(f"Enter your name - {name}")
-            client_node.send_message(name, MessageType.NAME)
-            if name != "admin":
+                print(f"Enter your username - {username}")
+            client_node.send_message(username, MessageType.NAME)
+            if username != "admin":
                 break
 
             password = input("Enter your password - ")
             client_node.send_message(password, MessageType.PASSWORD)
 
             _, response = client_node.recv_message()
-            if response == WRONG_PASSWORD_RESPONSE:
+            if response == WRONG_PASSWORD_MSG:
                 print("Wrong password")
                 continue
             print("Authenticated as admin successfully\n")
@@ -39,7 +39,7 @@ def authenticate_with_server(client_node: NetworkNode):
 def send_messages_to_server(client_node: NetworkNode):
     global is_alive
     try:
-        while True:
+        while is_alive:
             message = input()
             if message == "quit":
                 is_alive = False
@@ -56,17 +56,18 @@ def receive_messages_from_server(client_node: NetworkNode):
     while is_alive:
         try:
             message_type, message = client_node.recv_message()
-            # Usually a join or a leave message of a client
-            if message_type == MessageType.INFO.value:
-                received_message = message
-            elif message_type == MessageType.NAME.value:
-                sender_name = message
-                # if name of sender is received, chat message should follow
-                _, chat_message = client_node.recv_message()
-                received_message = f"{sender_name}: {chat_message}"
-            else:
-                print("Received invalid message type")
-                continue
+            match message_type:
+                # Usually a join or a leave message of a client
+                case MessageType.INFO.value:
+                    received_message = f"[INFO] {message}"
+                case MessageType.NAME.value:
+                    sender_name = message
+                    # if username of sender is received, chat message should follow
+                    _, chat_message = client_node.recv_message()
+                    received_message = f"{sender_name}: {chat_message}"
+                case no_matches:
+                    print(f"Received invalid message type {no_matches}")
+                    continue
             print(received_message)
 
         except socket.error:

@@ -13,14 +13,14 @@ HEADER_SIZE = MSG_LEN_HEADER_SIZE + MSG_TYPE_HEADER_SIZE
 
 CONN_ERROR = "Connection Broken"
 INVALID_MSG_LEN_ERROR = "Invlaid message length received"
-WRONG_PASSWORD_RESPONSE = "WRONG_PASSWORD"
+WRONG_PASSWORD_MSG = "WRONG_PASSWORD"
 
 
 class MessageType(StrEnum):
-    PASSWORD = "PASSWORD"
     INFO = "INFO"  # "{name} entered the chat" like messages, info messages
     NAME = "NAME"  # for sharing names of clients between server and client
     MESSAGE = "MESSAGE"  # chat messages
+    PASSWORD = "PASSWORD"
 
 
 class NetworkNode:
@@ -28,6 +28,13 @@ class NetworkNode:
 
     def __init__(self, connection: socket.socket):
         self.connection = connection
+
+    @property
+    def peer_address(self):
+        try:
+            return self.connection.getpeername()
+        except OSError:
+            return None
 
     def recv(self, size: int) -> str:
         """Receives an individual message packet"""
@@ -48,13 +55,13 @@ class NetworkNode:
         # Receive message length header, and listen for packets according to length in header
         message_length = int(self.recv(MSG_LEN_HEADER_SIZE))  # May raise ValueError
         # Receive message type header
-        message_type = self.recv(MSG_TYPE_HEADER_SIZE).strip()
+        message_type = self.recv(MSG_TYPE_HEADER_SIZE)
         # Receive message body
         while len(message) < message_length:
             received_message = self.recv(message_length - len(message))
             message += received_message
 
-        return message_type, message
+        return message_type.strip(), message.strip()
 
     def send(self, message: str):
         """Sends a single packet containing message"""
@@ -67,7 +74,7 @@ class NetworkNode:
         sends a packet containing header and message body
         """
 
-        message_packet = self.add_header(message, message_type.value)
+        message_packet = self.add_header(message, message_type.name)
         self.send(message_packet)
 
     @staticmethod
@@ -79,9 +86,7 @@ class NetworkNode:
         message_packet = message_length + message_type + message
         return message_packet
 
-    @staticmethod
-    def interpret_message(message_packet: str):
-        message_length = message_packet[:MSG_LEN_HEADER_SIZE].strip()
-        message_type = message_packet[MSG_LEN_HEADER_SIZE:MSG_TYPE_HEADER_SIZE].strip()
-        message = message_packet[MSG_TYPE_HEADER_SIZE:]
-        return message_length, message_type, message
+
+def wrong_packet_msg(log_msg: str, send_msg: str, client_node: NetworkNode):
+    print(log_msg)
+    client_node.send_message(send_msg, MessageType.INFO)
