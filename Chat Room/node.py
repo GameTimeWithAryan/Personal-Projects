@@ -3,28 +3,14 @@ Protocol for communication:
 For sending/receiving data, NetworkNode first sends/recieves message length
 in a packet of size `HEADER_SIZE` and then the actual message
 """
-
 import socket
-from enum import StrEnum
-
-MSG_LEN_HEADER_SIZE = 5
-MSG_TYPE_HEADER_SIZE = 10
-HEADER_SIZE = MSG_LEN_HEADER_SIZE + MSG_TYPE_HEADER_SIZE
-
-CONN_ERROR = "Connection Broken"
-INVALID_MSG_LEN_ERROR = "Invlaid message length received"
-WRONG_PASSWORD_MSG = "WRONG_PASSWORD"
-
-
-class MessageType(StrEnum):
-    INFO = "INFO"  # "{name} entered the chat" like messages, info messages
-    NAME = "NAME"  # for sharing names of clients between server and client
-    MESSAGE = "MESSAGE"  # chat messages
-    PASSWORD = "PASSWORD"
+from comms_protocol import MessageType, MSG_LEN_HEADER_SIZE, MSG_TYPE_HEADER_SIZE
 
 
 class NetworkNode:
-    """A class for handling the sending and receiving of data over a network using sockets"""
+    """A class for handling the sending and receiving of data over a network using sockets
+    All methods execpt property peer_address raise socket.error if any socket error occours
+    """
 
     def __init__(self, connection: socket.socket):
         self.connection = connection
@@ -41,7 +27,7 @@ class NetworkNode:
         return self.connection.recv(size).decode()
 
     def recv_message(self) -> tuple[str, str]:
-        """Receives complete message with message type
+        """Receives complete message packets, returns message type and message
 
         Following communication protocol, receives message length and packets
         until complete message of that length is received
@@ -69,24 +55,20 @@ class NetworkNode:
 
     def send_message(self, message: str, message_type: MessageType):
         """Sends a message to the remote connection
+        Adds Header to message before sending
 
         Following communication protocol,
         sends a packet containing header and message body
         """
 
-        message_packet = self.add_header(message, message_type.name)
+        message_packet = self.add_header(message, message_type.value)
         self.send(message_packet)
 
     @staticmethod
     def add_header(message: str, message_type: str):
         """Adds message length and message type headers to message for sending"""
-        # length of "bytes of message" with padding to make its length equal to `HEADER_SIZE`
+        # length of "bytes of message" with padding to make its length equal to `MSG_LEN_HEADER_SIZE`
         message_length = f"{len(message.encode()):<{MSG_LEN_HEADER_SIZE}}"
         message_type = f"{message_type:<{MSG_TYPE_HEADER_SIZE}}"
         message_packet = message_length + message_type + message
         return message_packet
-
-
-def wrong_packet_msg(log_msg: str, send_msg: str, client_node: NetworkNode):
-    print(log_msg)
-    client_node.send_message(send_msg, MessageType.INFO)

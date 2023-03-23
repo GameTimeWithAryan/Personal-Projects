@@ -2,38 +2,50 @@ import socket
 import threading
 from sys import argv
 
-from node import NetworkNode, MessageType, CONN_ERROR, INVALID_MSG_LEN_ERROR, WRONG_PASSWORD_MSG
+from node import NetworkNode
+from comms_protocol import MessageType, WRONG_PASSWORD_ERROR, CONN_ERROR, INVALID_MSG_LEN_ERROR
 
 HOST, PORT = socket.gethostbyname(socket.gethostname()), 5050
 is_alive: bool = True
 
 
+def get_username():
+    # Pycharm IDE doesn't recognize global argv variable and gives warning
+    if len(argv) == 2:
+        username = argv[1]
+        print(f"Enter your username - {username}")
+    else:
+        username = input("Enter your username - ")
+    return username
+
+
 def authenticate_with_server(client_node: NetworkNode):
-    global is_alive, argv
-    while True:
+    global is_alive
+    while is_alive:
         try:
-            if len(argv) == 1:
-                username = input("Enter your username - ")
-            else:
-                username = argv[1]
-                argv = argv[:1]
-                print(f"Enter your username - {username}")
+            username = get_username()
+
+            # Sending username to server
             client_node.send_message(username, MessageType.NAME)
+            # If username is not admin, no need for auth
             if username != "admin":
                 break
 
+            # Auth password for admin username
             password = input("Enter your password - ")
             client_node.send_message(password, MessageType.PASSWORD)
 
             _, response = client_node.recv_message()
-            if response == WRONG_PASSWORD_MSG:
+            if response == WRONG_PASSWORD_ERROR:
                 print("Wrong password")
                 continue
+
             print("Authenticated as admin successfully\n")
             break
-        except socket.error as e:
+        except socket.error:
             print(CONN_ERROR)
             is_alive = False
+            break
 
 
 def send_messages_to_server(client_node: NetworkNode):
@@ -59,7 +71,7 @@ def receive_messages_from_server(client_node: NetworkNode):
             match message_type:
                 # Usually a join or a leave message of a client
                 case MessageType.INFO.value:
-                    received_message = f"[INFO] {message}"
+                    received_message = f"{message}"
                 case MessageType.NAME.value:
                     sender_name = message
                     # if username of sender is received, chat message should follow
@@ -85,9 +97,16 @@ def run_client():
     """
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-        client.connect((HOST, PORT))
+        # Try connecting to server
+        try:
+            client.connect((HOST, PORT))
+        except socket.error:
+            print("Cannot connect to server")
+            print("Maybe the server is offline or you are not connected to the internet")
+
         client_node = NetworkNode(client)
 
+        # First authenticate before starting sender and receiver functions
         authenticate_with_server(client_node)
 
         receiver_thread = threading.Thread(target=receive_messages_from_server, args=(client_node,))
