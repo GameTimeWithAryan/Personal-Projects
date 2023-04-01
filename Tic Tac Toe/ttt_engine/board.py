@@ -1,17 +1,20 @@
 """
+ttt_engine.board
+~~~~~~~~~~~~~~~~
+
 Main Module for using the tic tac toe engine
 Contains Board class to control the board and play the game
 
 Usage
 -----
 Board setup for custom use:
-custom_board = Board(3)
+custom_board = Board()
 custom_board.grid.grid = [[custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL],
                          [custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL],
                          [custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL, custom_board.grid.EMPTY_CELL]]
 custom_board.fix_attributes()
 
-Here custom_board.EMPTY_CELL can be swapped for any mark from the custom_board.players list
+Here custom_board.grid.EMPTY_CELL can be swapped for any mark from the custom_board.players list
 Then fix_attributes method is run to select which player's turn it is
 """
 
@@ -19,8 +22,8 @@ import copy
 from colorama import Fore
 
 from .grid import Grid
-from .minmax import minmax, evaluate
-from .state_checker import StateChecker, DefaultStateChecker
+from .game_ai import minmax, evaluate
+from .state_checker import StateChecker, TTTStateChecker
 
 
 class Board:
@@ -53,11 +56,11 @@ class Board:
         self.grid: Grid = Grid(size)
 
         if state_checker is None:
-            state_checker = DefaultStateChecker(self.grid)
+            state_checker = TTTStateChecker(self.grid)
         self.state: StateChecker = state_checker
 
     def reset(self):
-        self.__init__(self.grid.size)
+        self.__init__(self.grid.size, self.players, self.state)
 
     def play_move(self, row: int, column: int, unplay: bool = False):
         """Plays a move on the grid and updates current player

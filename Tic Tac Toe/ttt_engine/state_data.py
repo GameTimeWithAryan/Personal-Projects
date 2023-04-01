@@ -25,7 +25,7 @@ class WinData:
 
     Attributes
     ----------
-        winner : str
+        winner : str | None
             mark of player who won, "X" or "O" or other marks can be possible values to be stored in this attribute
         win_type : WinType | None
             stores if player won by horizontal, vertical or diagonal line connection

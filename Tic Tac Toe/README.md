@@ -1,4 +1,10 @@
-﻿# Tic Tac Toe
+﻿# Note
+
+Even though the whole project is center about this module being a tic tac toe
+engine, the modules can be easily modified to allow playing other turn based board
+games like connect 4 and other tic tac toe variations
+
+# Tic Tac Toe
 
 This project contains a package `ttt_engine` with modules to make and control
 a tic tac toe board for playing the game.
@@ -8,9 +14,20 @@ This project also includes 2 versions of the tic tac toe game made using the mod
 1. The CLI game in terminal
 2. The GUI game using pygame
 
+## Project Vocabulary
+Some speical words might be used in docs and comments, here are their meanings
+
+ttt - tic tac toe
+
+grid - list of lists of cells
+
+cell - single space which can hold a player mark (value in a list)
+
+mark - player marker, eg. X mark, O mark
+
 ## Installation
 
-The package is currently not installable
+The package is currently not installable using pip, but it will be in future versions
 
 ## Usage
 
@@ -18,7 +35,8 @@ The repository can be cloned and the games can be played out of the box.
 Using the package requires placing it in the directory where it is to be used.
 
 The Board class is used to control the game. It supports gameplay with more than 2 players
-and grids of any size and supports custom classes to check the game state allowing you to add custom win/draw conditions.
+and grids of any size and supports adding of custom classes to check the game state
+allowing to add custom win/draw conditions.
 
 To use the package in a file named `usage.py`, the directory structue would look like this -
 
@@ -59,9 +77,9 @@ game_board.grid.print_grid()
 
 ## Documentation
 
-To understand all the methods available, it is a good idea to read the documentation of the code.
-These methods can be chained together to form a game.
+To understand all the methods available, it is a good idea to read the documentation of
+the code. These methods can be chained together to form a game.
 
 ## Zero-indexed or One-indexed?
-All methods of this module will take zero indexed values as their inputs and return them as their outputs
-s
+All methods of this module will take zero indexed values as their inputs and
+return them as their outputs

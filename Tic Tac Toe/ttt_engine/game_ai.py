@@ -6,6 +6,10 @@ from .state_data import GameState
 
 Board: TypeAlias = 'Board'
 
+DRAW = 0
+MAXIMIZER_WIN = 1
+MINIMIZER_WIN = -1
+
 
 def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = False):
     """ Minmax AI for Tic Tac Toe
@@ -22,10 +26,6 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
         evaluating : bool
             When evaluating is True, returns the evaluation of the position
             When evaluating is False, returns the best move on the board """
-
-    DRAW = 0
-    MAXIMIZER_WIN = 1
-    MINIMIZER_WIN = -1
 
     min_eval = inf
     max_eval = -inf

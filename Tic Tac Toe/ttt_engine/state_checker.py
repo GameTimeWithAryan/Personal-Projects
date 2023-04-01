@@ -13,25 +13,25 @@ class StateChecker(ABC):
 
     @abstractmethod
     def check_state(self, winner_mark: str, update_win_data: bool = True) -> GameState:
-        """Checks if the game is a draw or a win of any player"""
+        """Checks if the game is a draw or a win for any player"""
 
     @abstractmethod
     def check_win(self, winner_mark: str, update_win_data: bool = True) -> GameState:
         """Checks if a player has won the game
-        if yes, then updates the win_data if `update_win_data` flag is True"""
+        If yes, then updates the win_data if `update_win_data` flag is True"""
 
     @abstractmethod
     def check_draw(self) -> GameState:
         """Checks if the game is drawn"""
 
 
-class DefaultStateChecker(StateChecker):
+class TTTStateChecker(StateChecker):
     """Class for checking for win or draw using the grid and updating win_data accordingly
 
     Attributes
     ----------
         grid : Grid
-            grid which is used to check the state of the board when methods of DefaultStateChecker are called
+            grid which is used to check the state of the board when methods of TTTStateChecker are called
             to check for win or draw on the board
         _win_data : WinData
             contains win data of the game to manage and update it
