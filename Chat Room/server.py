@@ -14,7 +14,7 @@ HOST, PORT = socket.gethostbyname(socket.gethostname()), 5050
 clients: list[NetworkNode] = []
 
 
-def get_authenticated_name(client_node: NetworkNode, username: str):
+def authenticate_name(client_node: NetworkNode, username: str):
     """Checks username and authenticates if username is admin
     Returns None if username was not authenticated
     """
@@ -49,7 +49,7 @@ def get_authenticated_name(client_node: NetworkNode, username: str):
     return username
 
 
-def recieve_name(client_node: NetworkNode, address: tuple[str, int]):
+def get_authenticated_name(client_node: NetworkNode, address: tuple[str, int]):
     # Keep listening for name until it is received and authenticated, or if an error occurs
     while True:
         try:
@@ -58,13 +58,13 @@ def recieve_name(client_node: NetworkNode, address: tuple[str, int]):
 
             # If the packet is not a NAME type packet, report it
             if message_type != MessageType.NAME.value:
-                log_msg = f"[{address}] Listening for username packet, receievd {message_type}"
-                send_msg = "Invalid request"
-                report_wrong_packet(log_msg, send_msg, client_node)
+                error_msg = WRONG_PACKET_MSG.format(listen="username", recv=message_type)
+                log_msg = f"[{address}] {error_msg}"
+                report_wrong_packet(log_msg, error_msg, client_node)
                 continue
 
             # Check username and authenticate if necessary
-            username = get_authenticated_name(client_node, username)
+            username = authenticate_name(client_node, username)
             # username is None if username did not get authorization
             # else username is authenticated
             if username is not None:
@@ -133,7 +133,7 @@ def handle_client(connection: socket.socket, address: tuple[str, int]):
     clients.append(client_node)
 
     # Receive username
-    username = recieve_name(client_node, address)
+    username = get_authenticated_name(client_node, address)
     # If username is None, it means there was a socket.error caught
     if username is None:
         return
@@ -141,6 +141,7 @@ def handle_client(connection: socket.socket, address: tuple[str, int]):
 
     # Broadcasting join message
     join_message = f"{username} Entered the chat"
+    # NO_CLIENT_ADDRESS is used to broadcast to all clients
     broadcast_message((NO_CLIENT_ADDRESS,), None, join_message, MessageType.INFO)
 
     # Listening for messages from client

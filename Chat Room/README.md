@@ -1,6 +1,6 @@
 # GWA's Chat Room
 
-This is a chatroom implmented using tcp sockets, it is not secure
+This is a chatroom implmented using tcp sockets, but it is not secure
 
 ## Application Layer Protocol
 ### Node
@@ -20,10 +20,10 @@ this will be the username of the client to be displayed in the chatroom
 If the username is admin, then the server listens for `PASSWORD` packets containing
 password of admin for authentication
 
-After that, the server listens for `MSG` packets
+After successful authentication, the server listens for `MSG` packets
 
-On receviving the chat messages, the server broadcasts it to all other connected client
-except the sender
+On receviving a `MSG` packet, the server broadcasts the message to all other connected
+clients except the sender
 
 If the server received a packet of the type it was not listening for, it would
 send the client a message about an invalid packet. It would also log it to the console.
