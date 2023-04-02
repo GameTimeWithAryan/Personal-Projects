@@ -1,10 +1,4 @@
-﻿# Note
-
-Even though the whole project is center about this module being a tic tac toe
-engine, the modules can be easily modified to allow playing other turn based board
-games like connect 4 and other tic tac toe variations
-
-# Tic Tac Toe
+﻿# Tic Tac Toe
 
 This project contains a package `ttt_engine` with modules to make and control
 a tic tac toe board for playing the game.
@@ -83,3 +77,9 @@ the code. These methods can be chained together to form a game.
 ## Zero-indexed or One-indexed?
 All methods of this module will take zero indexed values as their inputs and
 return them as their outputs
+
+## Note
+
+Even though the whole project is centered about this package being a tic tac toe
+engine, the modules can be easily modified to allow playing other turn based board
+games like connect 4 and other tic tac toe variations
