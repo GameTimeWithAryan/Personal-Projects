@@ -102,7 +102,7 @@ def draw_marks():
 
 def draw_win_line():
     # Draw line connecting winning marks
-    if not game_board.state.win_data.win_line:
+    if not game_board.state_checker.win_data.win_line:
         return
 
     adjustment = 45
@@ -110,8 +110,8 @@ def draw_win_line():
     y_adjustment = 0
 
     make_one_indexed = lambda x: (x[0] + 1, x[1] + 1)
-    win_start_row, win_start_column = make_one_indexed(game_board.state.win_data.win_line[0])
-    win_end_row, win_end_column = make_one_indexed(game_board.state.win_data.win_line[2])
+    win_start_row, win_start_column = make_one_indexed(game_board.state_checker.win_data.win_line[0])
+    win_end_row, win_end_column = make_one_indexed(game_board.state_checker.win_data.win_line[2])
 
     line_start_x = board_x_pos + win_start_column * board_size / 3 - board_size / 6
     line_end_x = board_x_pos + win_end_column * board_size / 3 - board_size / 6
@@ -121,12 +121,12 @@ def draw_win_line():
 
     line_color = get_mark_color()
 
-    if game_board.state.win_data.win_type == WinType.HORIZONTAL:
+    if game_board.state_checker.win_data.win_type == WinType.HORIZONTAL:
         x_adjustment = adjustment
-    elif game_board.state.win_data.win_type == WinType.VERTICAL:
+    elif game_board.state_checker.win_data.win_type == WinType.VERTICAL:
         y_adjustment = adjustment
-    elif game_board.state.win_data.win_type == WinType.DIAGONAL:
-        if game_board.state.win_data.win_line == [(i, i) for i in range(game_board.grid.size)]:
+    elif game_board.state_checker.win_data.win_type == WinType.DIAGONAL:
+        if game_board.state_checker.win_data.win_line == [(i, i) for i in range(game_board.grid.size)]:
             x_adjustment = y_adjustment = adjustment
         else:
             x_adjustment = adjustment
@@ -194,9 +194,9 @@ if GAME_MODE == 1:
 while True:
     if not game_over:
         # Updating Title
-        game_state = game_board.state.check_state(game_board.get_previous_mark())
+        game_state = game_board.state_checker.check_state(game_board.get_previous_mark())
         if game_state == GameState.WIN:
-            title = f"Winner: {game_board.state.win_data.winner}"
+            title = f"Winner: {game_board.state_checker.win_data.winner}"
             game_over = True
         elif game_state == GameState.DRAW:
             title = "Draw"
@@ -224,7 +224,7 @@ while True:
                 has_moved = True
 
         if event.type == ai_trigger_event and not game_over and game_board.player_index == AI_PLAYER:
-            game_board.ai_play()
+            game_board.play_ai_move()
 
     # Drawing everything
     screen.fill(green_bg_color)

@@ -32,7 +32,7 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
     best_move: Coordinate | None = None
 
     # BASE CASES
-    game_state = minmax_board.state.check_state(minmax_board.get_previous_mark(), update_win_data=False)
+    game_state = minmax_board.state_checker.check_state(minmax_board.get_previous_mark(), update_win_data=False)
     if game_state == GameState.WIN:
         if evaluating:
             # If current player is the maximizing player then it means the other player played the winning move

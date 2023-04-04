@@ -8,29 +8,15 @@ This project also includes 2 versions of the tic tac toe game made using the mod
 1. The CLI game in terminal
 2. The GUI game using pygame
 
-## Project Vocabulary
-Some speical words might be used in docs and comments, here are their meanings
-
-ttt - tic tac toe
-
-grid - list of lists of cells
-
-cell - single space which can hold a player mark (value in a list)
-
-mark - player marker, eg. X mark, O mark
-
 ## Installation
 
-The package is currently not installable using pip, but it will be in future versions
+The `ttt_engine` package is currently not installable, but it will be in future versions
 
-## Usage
+## Getting Started
 
 The repository can be cloned and the games can be played out of the box.
-Using the package requires placing it in the directory where it is to be used.
-
-The Board class is used to control the game. It supports gameplay with more than 2 players
-and grids of any size and supports adding of custom classes to check the game state
-allowing to add custom win/draw conditions.
+Using the `ttt_engine` package requires placing it in the directory where it is to be used, as it
+is not installabe yet
 
 To use the package in a file named `usage.py`, the directory structue would look like this -
 
@@ -40,12 +26,20 @@ To use the package in a file named `usage.py`, the directory structue would look
     ├── ... 
 ```
 
+## Usage
+
+The `Board` class in the `board.py `file is used to control the tic tac toe game. It supports
+gameplay with more than 2 players, grids of any size and adding of custom rules for checking the
+game state allowing to add custom win/draw conditions. You can think of this class as the Game
+manager, and use its attributes to manage various aspects of the game
+
 Creating a Board instance which can be used to play the game -
 
 ```python
 # usage.py
 
 from ttt_engine import Board
+
 game_board = Board()
 ```
 
@@ -62,7 +56,7 @@ game_board.grid.print_grid()
 
 ### Output:
 
-```python
+```text
   1 2 3
 1 _ _ _
 2 _ _ X
@@ -75,11 +69,35 @@ To understand all the methods available, it is a good idea to read the documenta
 the code. These methods can be chained together to form a game.
 
 ## Zero-indexed or One-indexed?
+
 All methods of this module will take zero indexed values as their inputs and
 return them as their outputs
 
-## Note
+## Modding
 
-Even though the whole project is centered about this package being a tic tac toe
-engine, the modules can be easily modified to allow playing other turn based board
-games like connect 4 and other tic tac toe variations
+Even though the whole project is centered about this package being a tic tac toe game
+engine, the modules can be easily modded to allow playing other turn based board games
+like connect 4 and other tic tac toe variations.
+
+### Modding Options -
+
+To modify the way game behaves, some speical arguments can be passed to the constructor of
+Board class. Info about the parameter are given below, as well as in the docs of the board class -
+
+1. size - a grid of integer size `size*size` will be generated
+2. players - a list of player marks, to be used to add multiple players
+3. state_checker - A class implementing StateChecker ABC can be added in
+   state_checker.py and passed in to the Board class \_\_init__ to allow custom win and draw
+   conditions
+
+## Project Vocabulary
+
+Some speical words might be used in docs and comments, here are their meanings
+
+ttt - tic tac toe
+
+grid - list of lists of cells, an n x n space containing spaces to fill player marks
+
+cell - single space which can hold a player mark (value in a list)
+
+mark - player marker, eg. X mark, O mark
