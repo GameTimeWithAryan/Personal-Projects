@@ -14,7 +14,7 @@ Good problem solving & code logic
 
 #### Downsides -
 
-Less comments and docstings
+Few comments and docstings
 
 ## Screen Time Logger
 

@@ -1,3 +1,10 @@
+"""
+ttt_engine.game_ai
+~~~~~~~~~~~~~~~~~~
+
+AI module for playing the game
+"""
+
 from math import inf
 from typing import TypeAlias
 
@@ -6,6 +13,7 @@ from .state_data import GameState
 
 Board: TypeAlias = 'Board'
 
+# Constants used to evaluate base cases
 DRAW = 0
 MAXIMIZER_WIN = 1
 MINIMIZER_WIN = -1
@@ -14,18 +22,19 @@ MINIMIZER_WIN = -1
 def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = False):
     """ Minmax AI for Tic Tac Toe
 
-    It uses the MinMax Algorithm to either get the best move
+    It uses the Minmax AI Algorithm to either get the best move
     or the current evaluation of the position with best play by both sides
 
     Parameters
     ----------
-        minmax_board : Board
-            A copy of the original board
-        maximizing : bool
-            Maximizing or the Minimizing player in the minmax algorithm
-        evaluating : bool
-            When evaluating is True, returns the evaluation of the position
-            When evaluating is False, returns the best move on the board """
+    minmax_board : Board
+        Board to evaluate
+    maximizing : bool
+        Maximizing or the Minimizing player in the minmax algorithm
+    evaluating : bool
+        When evaluating is True, returns the evaluation of the position
+        When evaluating is False, returns the best move on the board
+    """
 
     min_eval = inf
     max_eval = -inf
@@ -33,15 +42,17 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
 
     # BASE CASES
     game_state = minmax_board.state_checker.check_state(minmax_board.get_previous_mark(), update_win_data=False)
+
     if game_state == GameState.WIN:
-        if evaluating:
-            # If current player is the maximizing player then it means the other player played the winning move
-            # Hence it returns MINIMIZER_WIN as eval, and vice versa
-            return MINIMIZER_WIN if maximizing else MAXIMIZER_WIN
-        else:
+        if not evaluating:
             return best_move
+
+        # If current player is the maximizing player then it means the last player played the winning move
+        # Hence it returns MINIMIZER_WIN as eval, and vice versa
+        return MINIMIZER_WIN if maximizing else MAXIMIZER_WIN
+
     if game_state == GameState.DRAW:
-        return DRAW if evaluating else None
+        return DRAW if evaluating else best_move
 
     # MINMAX ALGORITHM
     for move in minmax_board.grid.get_legal_moves():
@@ -66,16 +77,17 @@ def minmax(minmax_board: Board, maximizing: bool = True, evaluating: bool = Fals
 
 def evaluate(board: Board, move: Coordinate, maximizing: bool):
     """Evaluates the move and returns the evaluation
+
     Parameters
     ----------
-        board : Board
-            board object to make a move on, must be a copy to prevent changing data of the actual board
-        move : Coordinate
-            coordinates (row, column) of the move to evaluate
-        maximizing : bool
-            boolean to tell to evaluate from the maximizing size or the minimizing side"""
+    board : Board
+        Board to evaluate
+    move : Coordinate
+        Coordinates (row, column) of the move to evaluate
+    maximizing : bool
+        Boolean to tell to evaluate from the maximizing side or the minimizing side"""
 
     board.play_move(move[0], move[1])
     evaluation = minmax(board, maximizing, evaluating=True)
-    board.play_move(move[0], move[1], unplay=True)
+    board.play_move(move[0], move[1], unplay_move=True)
     return evaluation

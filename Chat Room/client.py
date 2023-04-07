@@ -117,7 +117,7 @@ def run_client():
             client.connect((HOST, PORT))
         except socket.error:
             print("Cannot connect to server")
-            print("Maybe the server is offline or you are not connected to the internet")
+            print("Maybe the server is offline, or you are not connected to the internet")
 
         client_node = NetworkNode(client)
 
