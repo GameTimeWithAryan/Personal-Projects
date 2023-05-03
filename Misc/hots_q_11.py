@@ -22,7 +22,7 @@ def get_answer_from_coef(a, b, c):
 
 
 def get_expected_answer(a, p):
-    return Fraction(a, (p * (p - 1)))
+    return Fraction(a ** 2, (p * (p - 1)) ** 2)
 
 
 def main():
@@ -31,9 +31,11 @@ def main():
             answer_from_coef = get_answer_from_coef(*get_coef(a, p))
             expected_answer = get_expected_answer(a, p)
 
-            if answer_from_coef == expected_answer:
-                print(f"{a=}, {p=}")
-                print(f"Coef: {answer_from_coef} | Expected: {expected_answer}")
+            print(f"{a=}, {p=}")
+            print(f"Coef: {answer_from_coef} | Expected: {expected_answer}")
+
+            if answer_from_coef != expected_answer:
+                print("CHECK ME")
 
 
 if __name__ == "__main__":
