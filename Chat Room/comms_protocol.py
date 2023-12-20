@@ -32,4 +32,4 @@ def report_wrong_packet(log_msg: str, send_msg: str, client_node: NetworkNode):
     """
 
     print(log_msg)
-    client_node.send_message(send_msg, MessageType.INFO)
+    client_node.send_email_message(send_msg)

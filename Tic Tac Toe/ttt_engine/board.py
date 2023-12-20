@@ -175,7 +175,7 @@ class Board:
 
 ################## CUSTOM SETUP #########################
 def evaluate_position(board: Board):
-    # TODO : Remove color coding system, instead add some prints to tell what +1, -1, 0 indicate for current player
+    # TODO : Remove color coding system, instead add some prints to tell what +1, -1, +0 indicate for current player
     #  Then work on its docs
     """Evaluates each legal move and prints it with the grid telling eval of each move"""
 
@@ -183,13 +183,13 @@ def evaluate_position(board: Board):
     legal_moves = board.grid.get_legal_moves()
 
     if board.player_index == 0:
-        eval_color_coding = {"0": Fore.BLUE, "1": Fore.GREEN, "-1": Fore.RED}
+        eval_color_coding = {"+0": Fore.BLUE, "+1": Fore.GREEN, "-1": Fore.RED}
     else:
-        eval_color_coding = {"0": Fore.BLUE, "1": Fore.RED, "-1": Fore.GREEN}
+        eval_color_coding = {"+0": Fore.BLUE, "+1": Fore.RED, "-1": Fore.GREEN}
 
     for move in legal_moves:
         str_evaluation = str(evaluate(board, move, bool(board.player_index)))
-        str_evaluation = str_evaluation.replace("1", "+1")
+        str_evaluation = str_evaluation.replace("1", "+1").replace("0", "+0")
         str_evaluation = eval_color_coding[str_evaluation] + str_evaluation + Fore.RESET
         str_evaluations.append(str_evaluation)
 
@@ -200,6 +200,6 @@ def evaluate_position(board: Board):
     # PRINTING STUFF
     eval_grid.print_grid()
     print(f"Player Turn: {board.get_current_mark()}\n")
-    print(" 0 - Draw")
-    print(f" 1 - {board.players[0]} Wins")
+    print("+0 - Draw")
+    print(f"+1 - {board.players[0]} Wins")
     print(f"-1 - {board.players[1]} Wins")

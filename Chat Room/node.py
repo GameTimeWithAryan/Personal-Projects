@@ -1,7 +1,7 @@
 """
 Protocol for communication:
 For sending/receiving data, NetworkNode first sends/recieves message length
-of size `MSG_LEN_HEADER_SIZE` and then message type and then message body
+of size `MSG_LEN_HEADER_SIZE` and then message type and then message email_body
 """
 import socket
 from comms_protocol import MessageType, MSG_LEN_HEADER_SIZE, MSG_TYPE_HEADER_SIZE
@@ -28,10 +28,10 @@ class NetworkNode:
         return self.connection.recv(size).decode()
 
     def recv_message(self) -> tuple[str, str]:
-        """Receives complete message packets, returns message type and message body
+        """Receives complete message packets, returns message type and message email_body
 
-        Following communication protocol, receives message length, message type and message body
-        until complete message body of that length is received
+        Following communication protocol, receives message length, message type and message email_body
+        until complete message email_body of that length is received
 
         Raises
         ------
@@ -59,7 +59,7 @@ class NetworkNode:
         Adds header to message before sending
 
         Following communication protocol,
-        sends a packet containing header and message body
+        sends a packet containing header and message email_body
         """
 
         message_packet = self.add_header(message_body, message_type.value)
@@ -67,7 +67,7 @@ class NetworkNode:
 
     @staticmethod
     def add_header(message_body: str, message_type: str) -> str:
-        """Adds message length and message type headers to message body
+        """Adds message length and message type headers to message email_body
         To prepare for sending message following the protocol
         """
 
